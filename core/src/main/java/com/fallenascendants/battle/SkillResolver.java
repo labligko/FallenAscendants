@@ -5,6 +5,7 @@ import com.fallenascendants.enumtype.TargetType;
 import com.fallenascendants.model.BattleField;
 import com.fallenascendants.model.Card;
 import com.fallenascendants.model.Skill;
+import com.fallenascendants.enumtype.ReactiveTrigger;
 
 import java.util.Random;
 
@@ -23,6 +24,10 @@ public class SkillResolver {
         Skill skill = caster.getActiveSkill();
 
         if (skill == null) {
+            return null;
+        }
+
+        if (!skill.isActiveSkill()) {
             return null;
         }
 
@@ -180,5 +185,71 @@ public class SkillResolver {
         }
 
         return targetingSystem.selectLowestHpTarget(allyCards);
+    }
+
+    public String resolveReactiveSkill(Card caster, BattleField allyField, BattleField enemyField, ReactiveTrigger trigger) {
+        Skill skill = caster.getDeathSkill();
+
+        if (skill == null || !skill.isReactiveSkill()) {
+            return "";
+        }
+
+        if (skill.getReactiveTrigger() != trigger) {
+            return "";
+        }
+
+        if (skill.getSkillType() == SkillType.DAMAGE) {
+            return resolveDamageSkill(caster, enemyField, skill);
+        }
+
+        if (skill.getSkillType() == SkillType.HEAL) {
+            return resolveHealSkill(caster, allyField, skill);
+        }
+
+        if (skill.getSkillType() == SkillType.SHIELD) {
+            Card target = selectAllyTarget(skill.getTargetType(), allyField.getActiveCards());
+
+            if (target == null) {
+                return caster.getName() + "'s death skill " + skill.getName()
+                    + " has no valid target.\n";
+            }
+
+            target.addShield(skill.getPower());
+
+            return caster.getName() + "'s death skill activates: " + skill.getName()
+                + "\n" + target.getName() + " gains Shield +" + skill.getPower()
+                + "\nCurrent Shield: " + target.getShield() + "\n";
+        }
+
+        return caster.getName() + "'s death skill " + skill.getName()
+            + " activates, but the effect is not implemented yet.\n";
+    }
+
+    public String resolvePassiveSkill(Card card) {
+        Skill skill = card.getPassiveSkill();
+
+        if (skill == null || !skill.isPassiveSkill()) {
+            return "";
+        }
+
+        if (skill.getSkillType() == SkillType.BUFF) {
+            return resolvePassiveBuff(card, skill);
+        }
+
+        return card.getName() + " passive " + skill.getName()
+            + " is active, but effect is not implemented yet.\n";
+    }
+
+    private String resolvePassiveBuff(Card card, Skill skill) {
+        if (skill.getTargetType() == TargetType.SELF) {
+            card.increaseAtk(skill.getPower());
+
+            return card.getName() + " passive activates: " + skill.getName()
+                + "\nATK increased by " + skill.getPower()
+                + "\nCurrent ATK: " + card.getAtk() + "\n";
+        }
+
+        return card.getName() + " passive " + skill.getName()
+            + " has unsupported target.\n";
     }
 }
