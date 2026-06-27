@@ -6,5 +6,10 @@ public enum SkillType {
     TAUNT,
     SHIELD,
     BUFF,
-    DEBUFF
+    DEBUFF,
+
+    BURN,
+    POISON,
+    SLOW,
+    STUN
 }

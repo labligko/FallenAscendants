@@ -173,6 +173,18 @@ public class Card {
         return Math.max(1, spd - temporarySpdReduction);
     }
 
+    public void increaseAtkByPercent(int percent) {
+        if (percent > 0) {
+            atk += atk * percent / 100;
+        }
+    }
+
+    public void increaseDefByPercent(int percent) {
+        if (percent > 0) {
+            def += def * percent / 100;
+        }
+    }
+
     public String getId() {
         return id;
     }

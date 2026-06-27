@@ -6,6 +6,8 @@ import com.fallenascendants.model.BattleField;
 import com.fallenascendants.model.Card;
 import com.fallenascendants.model.Skill;
 import com.fallenascendants.enumtype.ReactiveTrigger;
+import com.fallenascendants.enumtype.StatusType;
+import com.fallenascendants.model.StatusEffect;
 
 import java.util.Random;
 
@@ -77,6 +79,22 @@ public class SkillResolver {
                 + ". Shield +" + skill.getPower() + ".\n"
                 + "Current Shield: " + caster.getShield() + "\n"
                 + "Skill cooldown: " + skill.getCooldown() + " turn(s).\n";
+        }
+
+        if (skill.getSkillType() == SkillType.BURN) {
+            return resolveStatusSkill(caster, enemyField, skill, StatusType.BURN);
+        }
+
+        if (skill.getSkillType() == SkillType.POISON) {
+            return resolveStatusSkill(caster, enemyField, skill, StatusType.POISON);
+        }
+
+        if (skill.getSkillType() == SkillType.SLOW) {
+            return resolveStatusSkill(caster, enemyField, skill, StatusType.SLOW);
+        }
+
+        if (skill.getSkillType() == SkillType.STUN) {
+            return resolveStatusSkill(caster, enemyField, skill, StatusType.STUN);
         }
         skill.use();
         return caster.getName() + " uses " + skill.getName()
@@ -251,5 +269,53 @@ public class SkillResolver {
 
         return card.getName() + " passive " + skill.getName()
             + " has unsupported target.\n";
+    }
+
+    private String resolveStatusSkill(Card caster, BattleField enemyField, Skill skill, StatusType statusType) {
+        StringBuilder log = new StringBuilder();
+
+        if (skill.getTargetType() == TargetType.ALL_ENEMIES) {
+            log.append(caster.getName())
+                .append(" uses ")
+                .append(skill.getName())
+                .append(" on all enemies.\n");
+
+            for (Card target : enemyField.getActiveCards()) {
+                if (target != null && !target.isDead()) {
+                    target.addStatusEffect(new StatusEffect(statusType, skill.getPower(), skill.getDuration()));
+
+                    log.append("- ")
+                        .append(target.getName())
+                        .append(" receives ")
+                        .append(statusType)
+                        .append(" for ")
+                        .append(skill.getDuration())
+                        .append(" turn(s).\n");
+                }
+            }
+
+            skill.use();
+
+            log.append("Skill cooldown: ").append(skill.getCooldown()).append(" turn(s).");
+
+            return log.toString();
+        }
+
+        Card target = selectSkillTarget(skill.getTargetType(), enemyField.getActiveCards());
+
+        if (target == null) {
+            return caster.getName() + " tried to use " + skill.getName()
+                + ", but there is no target.";
+        }
+
+        target.addStatusEffect(new StatusEffect(statusType, skill.getPower(), skill.getDuration()));
+        skill.use();
+
+        return caster.getName() + " uses " + skill.getName()
+            + " on " + target.getName()
+            + ".\n"
+            + target.getName() + " receives " + statusType
+            + " for " + skill.getDuration() + " turn(s).\n"
+            + "Skill cooldown: " + skill.getCooldown() + " turn(s).";
     }
 }

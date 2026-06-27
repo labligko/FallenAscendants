@@ -17,6 +17,7 @@ public class BattleManager {
     private SkillResolver skillResolver;
     private BattleLog battleLog;
     private StatusEffectResolver statusEffectResolver;
+    private FactionSynergyResolver factionSynergyResolver;
 
     public BattleManager(BattleField playerField, BattleField enemyField) {
         this.playerField = playerField;
@@ -28,6 +29,7 @@ public class BattleManager {
         this.skillResolver = new SkillResolver();
         this.battleLog = new BattleLog();
         this.statusEffectResolver = new StatusEffectResolver();
+        this.factionSynergyResolver = new FactionSynergyResolver();
 
         rebuildTurnQueue();
     }
@@ -285,6 +287,24 @@ public class BattleManager {
         }
 
         card.removeExpiredStatus();
+
+        return log.toString();
+    }
+
+    public String applyFactionSynergyAtBattleStart() {
+        StringBuilder log = new StringBuilder();
+
+        log.append(factionSynergyResolver.applyFactionSynergy(
+            playerField.getActiveCards(),
+            "PLAYER"
+        ));
+
+        log.append(factionSynergyResolver.applyFactionSynergy(
+            enemyField.getActiveCards(),
+            "ENEMY"
+        ));
+
+        battleLog.add(log.toString());
 
         return log.toString();
     }
