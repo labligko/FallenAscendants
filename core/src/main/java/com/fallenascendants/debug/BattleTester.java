@@ -3,6 +3,7 @@ package com.fallenascendants.debug;
 import java.util.Scanner;
 
 import com.fallenascendants.battle.BattleManager;
+import com.fallenascendants.data.CardDatabase;
 import com.fallenascendants.enumtype.Faction;
 import com.fallenascendants.enumtype.Rarity;
 import com.fallenascendants.enumtype.Role;
@@ -17,8 +18,8 @@ import com.fallenascendants.data.DummyBattleFactory;
 public class BattleTester {
 
     public static void runTest() {
-        Deck playerDeck = DummyBattleFactory.createPlayerDeck();
-        Deck enemyDeck = DummyBattleFactory.createEnemyDeck();
+        Deck playerDeck = DummyBattleFactory.createRandomDeck();
+        Deck enemyDeck = DummyBattleFactory.createRandomDeck();
 
         printDeck("PLAYER DECK", playerDeck);
         printDeck("ENEMY DECK", enemyDeck);
@@ -30,6 +31,18 @@ public class BattleTester {
 
         System.out.println(battleManager.applyPassiveSkillsAtBattleStart());
         System.out.println(battleManager.applyFactionSynergyAtBattleStart());
+
+//        System.out.println("Total cards: " + CardDatabase.getAllCards().size());
+//        System.out.println("common: " + CardDatabase.getCardsByRarity(Rarity.COMMON).size());
+//        System.out.println("rare: " + CardDatabase.getCardsByRarity(Rarity.RARE).size());
+//        System.out.println("epic: " + CardDatabase.getCardsByRarity(Rarity.EPIC).size());
+//        System.out.println("Legend: " + CardDatabase.getCardsByRarity(Rarity.LEGENDARY).size());
+//        System.out.println("tank: " + CardDatabase.getCardsByRole(Role.TANK).size());
+//        System.out.println("dps: " + CardDatabase.getCardsByRole(Role.DPS).size());
+//        System.out.println("assassin: " + CardDatabase.getCardsByRole(Role.ASSASSIN).size());
+//        System.out.println("mage: " + CardDatabase.getCardsByRole(Role.MAGE).size());
+//        System.out.println("support: " + CardDatabase.getCardsByRole(Role.SUPPORT).size());
+//        System.out.println("healer: " + CardDatabase.getCardsByRole(Role.HEALER).size());
 
         System.out.println("\n==============================");
         System.out.println("BATTLE START");
