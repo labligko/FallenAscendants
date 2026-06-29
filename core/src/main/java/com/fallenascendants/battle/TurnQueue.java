@@ -32,7 +32,7 @@ public class TurnQueue {
     private void sortBySpeed() {
         LinkedList<Card> sortedList = new LinkedList<>(actionQueue);
 
-        sortedList.sort((card1, card2) -> card2.getSpd() - card1.getSpd());
+        sortedList.sort((card1, card2) -> card2.getEffectiveSpd() - card1.getEffectiveSpd());
 
         actionQueue.clear();
         actionQueue.addAll(sortedList);

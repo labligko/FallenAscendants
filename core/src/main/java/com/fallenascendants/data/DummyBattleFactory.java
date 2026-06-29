@@ -3,6 +3,9 @@ package com.fallenascendants.data;
 import com.fallenascendants.battle.BattleManager;
 import com.fallenascendants.enumtype.*;
 import com.fallenascendants.model.*;
+import com.fallenascendants.enumtype.SkillTrigger;
+import com.fallenascendants.enumtype.ReactiveTrigger;
+import com.fallenascendants.enumtype.StatusType;
 
 public class DummyBattleFactory {
 
@@ -20,14 +23,40 @@ public class DummyBattleFactory {
         Deck deck = new Deck();
 
         deck.addCard(CardDatabase.getCardById("fallen_seraph"));
-        deck.addCard(CardDatabase.getCardById("shadow_saint"));
+        Card shadowSaint = CardDatabase.getCardById("shadow_saint");
+        shadowSaint.setDeathSkill(new Skill(
+            "Last Shadow",
+            SkillType.DAMAGE,
+            SkillTrigger.REACTIVE,
+            ReactiveTrigger.ON_DEATH,
+            TargetType.ENEMY_LOWEST_HP,
+            25,
+            0,
+            0
+        ));
+        deck.addCard(shadowSaint);
+        shadowSaint.addStatusEffect(new StatusEffect(StatusType.BURN, 5, 3));
+        shadowSaint.addStatusEffect(new StatusEffect(StatusType.POISON, 5, 3));
+        shadowSaint.addStatusEffect(new StatusEffect(StatusType.SLOW, 10, 2));
+        shadowSaint.addStatusEffect(new StatusEffect(StatusType.STUN, 0, 1));
         deck.addCard(CardDatabase.getCardById("broken_madonna"));
         deck.addCard(CardDatabase.getCardById("void_bishop"));
-        deck.addCard(CardDatabase.getCardById("void_paladin"));
+        Card voidPaladin = CardDatabase.getCardById("void_paladin");
+        voidPaladin.setPassiveSkill(new Skill(
+            "Broken Oath",
+            SkillType.BUFF,
+            SkillTrigger.PASSIVE,
+            ReactiveTrigger.NONE,
+            TargetType.SELF,
+            5,
+            0,
+            0
+        ));
+        deck.addCard(voidPaladin);
         deck.addCard(CardDatabase.getCardById("wyvern_hatchling"));
         deck.addCard(CardDatabase.getCardById("heretic_scribe"));
         deck.addCard(CardDatabase.getCardById("celestial_dragon_undone"));
-        
+
         return deck;
     }
 

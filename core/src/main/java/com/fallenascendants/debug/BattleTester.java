@@ -28,6 +28,9 @@ public class BattleTester {
 
         BattleManager battleManager = new BattleManager(playerField, enemyField);
 
+        System.out.println(battleManager.applyPassiveSkillsAtBattleStart());
+        System.out.println(battleManager.applyFactionSynergyAtBattleStart());
+
         System.out.println("\n==============================");
         System.out.println("BATTLE START");
         System.out.println("==============================");

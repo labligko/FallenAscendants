@@ -1,6 +1,8 @@
 package com.fallenascendants.model;
 
 import java.util.LinkedList;
+import java.util.ArrayList;
+import java.util.List;
 
 public class BattleField {
     private static final int ACTIVE_SLOT_SIZE = 5;
@@ -42,11 +44,14 @@ public class BattleField {
         return graveyard;
     }
 
-    public void removeDeadCardsAndReplace() {
+    public List<Card> removeDeadCardsAndReplace() {
+        List<Card> deadCards = new ArrayList<>();
+
         for (int i = 0; i < activeCards.length; i++) {
             Card card = activeCards[i];
 
             if (card != null && card.isDead()) {
+                deadCards.add(card);
                 graveyard.add(card);
 
                 if (!reserveCards.isEmpty()) {
@@ -56,6 +61,8 @@ public class BattleField {
                 }
             }
         }
+
+        return deadCards;
     }
 
     public boolean hasAliveCards() {
