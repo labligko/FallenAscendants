@@ -3,6 +3,7 @@ package com.fallenascendants.debug;
 import java.util.Scanner;
 
 import com.fallenascendants.battle.BattleManager;
+import com.fallenascendants.battle.FactionCounterGraph;
 import com.fallenascendants.data.CardDatabase;
 import com.fallenascendants.enumtype.Faction;
 import com.fallenascendants.enumtype.Rarity;
@@ -31,6 +32,13 @@ public class BattleTester {
 
         System.out.println(battleManager.applyPassiveSkillsAtBattleStart());
         System.out.println(battleManager.applyFactionSynergyAtBattleStart());
+
+        FactionCounterGraph factionCounterGraph = new FactionCounterGraph();
+
+        System.out.println(factionCounterGraph.getCounterReport());
+        System.out.println(factionCounterGraph.getDepthFirstTraversalReport(
+            Faction.CELESTIAL_REMNANTS
+        ));
 
 //        System.out.println("Total cards: " + CardDatabase.getAllCards().size());
 //        System.out.println("common: " + CardDatabase.getCardsByRarity(Rarity.COMMON).size());

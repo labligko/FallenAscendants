@@ -7,6 +7,8 @@ import java.util.ArrayList;
 import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
+import java.util.EnumSet;
+import java.util.Set;
 
 public class FactionCounterGraph {
     private static final double COUNTER_MULTIPLIER = 1.20;
@@ -142,5 +144,45 @@ public class FactionCounterGraph {
         }
 
         return report.toString();
+    }
+
+    public String getDepthFirstTraversalReport(Faction startFaction) {
+        StringBuilder report = new StringBuilder();
+        Set<Faction> visited = EnumSet.noneOf(Faction.class);
+
+        report.append("Faction Counter Graph DFS Traversal:\n");
+        report.append("Start from: ")
+            .append(startFaction)
+            .append("\n");
+
+        depthFirstSearch(startFaction, visited, report);
+
+        return report.toString();
+    }
+
+    private void depthFirstSearch(
+        Faction currentFaction,
+        Set<Faction> visited,
+        StringBuilder report
+    ) {
+        if (currentFaction == null || visited.contains(currentFaction)) {
+            return;
+        }
+
+        visited.add(currentFaction);
+
+        report.append("- Visit ")
+            .append(currentFaction)
+            .append("\n");
+
+        for (Faction nextFaction : adjacencyList.get(currentFaction)) {
+            report.append("  Edge: ")
+                .append(currentFaction)
+                .append(" -> ")
+                .append(nextFaction)
+                .append("\n");
+
+            depthFirstSearch(nextFaction, visited, report);
+        }
     }
 }
