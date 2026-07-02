@@ -359,7 +359,6 @@ public class CardDatabase {
         // Theme: Curse, Poison, Burn, Dark Priest
         // Distribution: 4 Common, 3 Rare, 2 Epic, 1 Legendary
         // ====================================================================
-
         // COMMON 1
         Card deepbornAcolyte = new Card(
             "deepborn_acolyte", "Deepborn Acolyte",
