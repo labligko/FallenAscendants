@@ -18,6 +18,7 @@ public class BattleManager {
     private BattleLog battleLog;
     private StatusEffectResolver statusEffectResolver;
     private FactionSynergyResolver factionSynergyResolver;
+    private FactionCounterEffectResolver factionCounterEffectResolver;
 
     public BattleManager(BattleField playerField, BattleField enemyField) {
         this.playerField = playerField;
@@ -30,6 +31,7 @@ public class BattleManager {
         this.battleLog = new BattleLog();
         this.statusEffectResolver = new StatusEffectResolver();
         this.factionSynergyResolver = new FactionSynergyResolver();
+        this.factionCounterEffectResolver = new FactionCounterEffectResolver();
 
         rebuildTurnQueue();
     }
@@ -135,6 +137,13 @@ public class BattleManager {
                 + result.getHpDamage()
         );
 
+        String counterEffectLog = factionCounterEffectResolver.resolveCounterEffect(
+            attacker,
+            target,
+            allyField,
+            result.getHpDamage()
+        );
+
         StringBuilder log = new StringBuilder();
 
         if (statusLog != null && !statusLog.isBlank()) {
@@ -177,6 +186,10 @@ public class BattleManager {
             .append(" Shield: ")
             .append(target.getShield())
             .append("\n");
+
+        if (!counterEffectLog.isBlank()) {
+            log.append(counterEffectLog);
+        }
 
         boolean targetDead = target.isDead();
 
