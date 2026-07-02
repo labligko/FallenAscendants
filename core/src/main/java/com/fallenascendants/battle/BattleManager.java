@@ -18,6 +18,7 @@ public class BattleManager {
     private BattleLog battleLog;
     private StatusEffectResolver statusEffectResolver;
     private FactionSynergyResolver factionSynergyResolver;
+    private FactionCounterEffectResolver factionCounterEffectResolver;
 
     public BattleManager(BattleField playerField, BattleField enemyField) {
         this.playerField = playerField;
@@ -30,6 +31,7 @@ public class BattleManager {
         this.battleLog = new BattleLog();
         this.statusEffectResolver = new StatusEffectResolver();
         this.factionSynergyResolver = new FactionSynergyResolver();
+        this.factionCounterEffectResolver = new FactionCounterEffectResolver();
 
         rebuildTurnQueue();
     }
@@ -116,7 +118,17 @@ public class BattleManager {
             }
 
             log.append(skillLog).append("\n");
-            log.append(handleDeaths());
+
+            String deathLog = handleDeaths();
+
+            if (!deathLog.isBlank()) {
+                log.append(deathLog);
+            }
+
+            turnQueue.rebuildRemainingQueue();
+
+            log.append("\n");
+            log.append(turnQueue.getQueueReport());
 
             battleLog.add(log.toString());
 
@@ -133,6 +145,13 @@ public class BattleManager {
         target.takeDamage(
             result.getShieldAbsorbed()
                 + result.getHpDamage()
+        );
+
+        String counterEffectLog = factionCounterEffectResolver.resolveCounterEffect(
+            attacker,
+            target,
+            allyField,
+            result.getHpDamage()
         );
 
         StringBuilder log = new StringBuilder();
@@ -178,7 +197,9 @@ public class BattleManager {
             .append(target.getShield())
             .append("\n");
 
-        boolean targetDead = target.isDead();
+        if (!counterEffectLog.isBlank()) {
+            log.append(counterEffectLog);
+        }
 
         String deathLog = handleDeaths();
 
@@ -186,9 +207,14 @@ public class BattleManager {
             log.append(deathLog);
         }
 
+        turnQueue.rebuildRemainingQueue();
+
         if (attacker.getActiveSkill() != null) {
             attacker.getActiveSkill().reduceCooldown();
         }
+
+        log.append("\n");
+        log.append(turnQueue.getQueueReport());
 
         battleLog.add(log.toString());
 
@@ -307,6 +333,10 @@ public class BattleManager {
         battleLog.add(log.toString());
 
         return log.toString();
+    }
+
+    public String getTurnQueueReport() {
+        return turnQueue.getQueueReport();
     }
 
     public boolean isBattleOver() {

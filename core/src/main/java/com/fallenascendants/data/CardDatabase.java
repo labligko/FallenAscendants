@@ -29,10 +29,8 @@ public class CardDatabase {
             "ashveil_acolyte", "Ashveil Acolyte", Faction.CELESTIAL_REMNANTS, Role.HEALER, Rarity.COMMON,
             85, 10, 6, 85, 15, 1, "cards/ashveil_acolyte.png"
         );
-        /*
-        ACTIVE: Lesser Heal
-        Effect: Heal the ally with the lowest HP by 16.
-        */
+        // ACTIVE: Lesser Heal
+        // Effect: Heal the ally with the lowest HP by 16.
         ashveilAcolyte.setActiveSkill(new Skill("Lesser Heal", SkillType.HEAL, TargetType.ALLY_LOWEST_HP, 16, 3));
         cards.put(ashveilAcolyte.getId(), ashveilAcolyte);
 
@@ -41,46 +39,38 @@ public class CardDatabase {
             "Veilsworn", "Veilsworn", Faction.CELESTIAL_REMNANTS, Role.SUPPORT, Rarity.COMMON,
             95, 14, 8, 80, 20, 1, "cards/Veilsworn.png"
         );
-        /*
-        ACTIVE: Lesser Ward
-        Effect: Gain Shield 18.
-        */
+        // ACTIVE: Lesser Ward
+        // Effect: Gain Shield 18.
         Veilsworn.setActiveSkill(new Skill("Lesser Ward", SkillType.SHIELD, TargetType.SELF, 18, 3));
         cards.put(Veilsworn.getId(), Veilsworn);
 
         // COMMON 3
         Card thorngateSentinel = new Card(
             "thorngate_sentinel", "Thorngate Sentinel", Faction.CELESTIAL_REMNANTS, Role.TANK, Rarity.COMMON,
-            140, 12, 18, 58, 105, 1, "cards/thorngate_sentinel.png"
+            128, 15, 10, 58, 105, 1, "cards/thorngate_sentinel.png"
         );
-        /*
-        ACTIVE: Brace
-        Effect: Gain Shield 25.
-        */
-        thorngateSentinel.setActiveSkill(new Skill("Brace", SkillType.SHIELD, TargetType.SELF, 25, 3));
+        // ACTIVE: Brace
+        // Effect: Gain Shield 25.
+        thorngateSentinel.setActiveSkill(new Skill("Brace", SkillType.SHIELD, TargetType.SELF, 15, 3));
         cards.put(thorngateSentinel.getId(), thorngateSentinel);
 
         // COMMON 4
         Card fadebornScout = new Card(
             "fadeborn_scout", "Fadeborn Scout", Faction.CELESTIAL_REMNANTS, Role.DPS, Rarity.COMMON,
-            90, 26, 7, 92, 30, 1, "cards/fadeborn_scout.png"
+            90, 30, 5, 92, 30, 1, "cards/fadeborn_scout.png"
         );
-        /*
-        ACTIVE: Radiant Strike
-        Effect: Deal 28 damage to an enemy based on aggro.
-        */
+        // ACTIVE: Radiant Strike
+        // Effect: Deal 28 damage to an enemy based on aggro.
         fadebornScout.setActiveSkill(new Skill("Radiant Strike", SkillType.DAMAGE, TargetType.ENEMY_BY_AGGRO, 28, 2));
         cards.put(fadebornScout.getId(), fadebornScout);
 
         // RARE 1
         Card fallenSeraph = new Card(
             "fallen_seraph", "Fallen Seraph", Faction.CELESTIAL_REMNANTS, Role.TANK, Rarity.RARE,
-            150, 20, 15, 70, 110, 1, "cards/fallen_seraph.png"
+            140, 20, 12, 70, 110, 1, "cards/fallen_seraph.png"
         );
-        /*
-        ACTIVE: Divine Taunt
-        Effect: Increase own aggro by 50.
-        */
+        // ACTIVE: Divine Taunt
+        // Effect: Increase own aggro by 50.
         fallenSeraph.setActiveSkill(new Skill("Divine Taunt", SkillType.TAUNT, TargetType.SELF, 50, 3));
         cards.put(fallenSeraph.getId(), fallenSeraph);
 
@@ -89,22 +79,18 @@ public class CardDatabase {
             "seraphic_warden", "Seraphic Warden", Faction.CELESTIAL_REMNANTS, Role.SUPPORT, Rarity.RARE,
             105, 16, 12, 78, 25, 1, "cards/seraphic_warden.png"
         );
-        /*
-        ACTIVE: Guardian Prayer
-        Effect: Gain Shield 35.
-        */
+        // ACTIVE: Guardian Prayer
+        // Effect: Gain Shield 35.
         seraphicWarden.setActiveSkill(new Skill("Guardian Prayer", SkillType.SHIELD, TargetType.SELF, 35, 3));
         cards.put(seraphicWarden.getId(), seraphicWarden);
 
         // RARE 3
         Card sanctifiedArcher = new Card(
             "sanctified_archer", "Sanctified Archer", Faction.CELESTIAL_REMNANTS, Role.DPS, Rarity.RARE,
-            100, 34, 7, 94, 35, 1, "cards/sanctified_archer.png"
+            100, 36, 7, 94, 35, 1, "cards/sanctified_archer.png"
         );
-        /*
-        ACTIVE: Piercing Light
-        Effect: Deal 42 damage to the enemy with the lowest HP.
-        */
+        // ACTIVE: Piercing Light
+        // Effect: Deal 42 damage to the enemy with the lowest HP.
         sanctifiedArcher.setActiveSkill(new Skill("Piercing Light", SkillType.DAMAGE, TargetType.ENEMY_LOWEST_HP, 42, 2));
         cards.put(sanctifiedArcher.getId(), sanctifiedArcher);
 
@@ -113,13 +99,11 @@ public class CardDatabase {
             "broken_madonna", "Broken Madonna", Faction.CELESTIAL_REMNANTS, Role.HEALER, Rarity.EPIC,
             95, 10, 6, 90, 15, 1, "cards/broken_madonna.png"
         );
-        /*
-        ACTIVE: Holy Light
-        Effect: Heal the ally with the lowest HP by 24.
+        // ACTIVE: Holy Light
+        // Effect: Heal the ally with the lowest HP by 24.
 
-        PASSIVE: Purity
-        Effect: Gain Shield 10 when passive skills are applied.
-        */
+        // PASSIVE: Purity
+        // Effect: Gain Shield 10 when passive skills are applied.
         brokenMadonna.setActiveSkill(new Skill("Holy Light", SkillType.HEAL, TargetType.ALLY_LOWEST_HP, 24, 3));
         brokenMadonna.setPassiveSkill(new Skill(
             "Purity",
@@ -138,13 +122,11 @@ public class CardDatabase {
             "vael_the_uncrowned", "Vael the Uncrowned", Faction.CELESTIAL_REMNANTS, Role.MAGE, Rarity.EPIC,
             100, 40, 6, 82, 25, 1, "cards/vael_the_uncrowned.png"
         );
-        /*
-        ACTIVE: Starfall
-        Effect: Deal 24 damage to all enemies.
+        // ACTIVE: Starfall
+        // Effect: Deal 24 damage to all enemies.
 
-        REACTIVE: Dying Radiance
-        Effect: On death, deal 18 damage to all enemies.
-        */
+        // REACTIVE: Dying Radiance
+        // Effect: On death, deal 18 damage to all enemies.
         vaelTheUncrowned.setActiveSkill(new Skill("Starfall", SkillType.DAMAGE, TargetType.ALL_ENEMIES, 24, 3));
         vaelTheUncrowned.setDeathSkill(new Skill(
             "Dying Radiance",
@@ -163,16 +145,14 @@ public class CardDatabase {
             "Mournveil", "Mournveil", Faction.CELESTIAL_REMNANTS, Role.HEALER, Rarity.LEGENDARY,
             120, 18, 10, 92, 20, 1, "cards/Mournveil.png"
         );
-        /*
-        ACTIVE: Final Benediction
-        Effect: Heal the ally with the lowest HP by 34.
+        // ACTIVE: Final Benediction
+        // Effect: Heal the ally with the lowest HP by 34.
 
-        PASSIVE: Sacred Remnant
-        Effect: Gain Shield 20 when passive skills are applied.
+        // PASSIVE: Sacred Remnant
+        // Effect: Gain Shield 20 when passive skills are applied.
 
-        REACTIVE: Last Miracle
-        Effect: On death, heal the ally with the lowest HP by 30.
-        */
+        // REACTIVE: Last Miracle
+        // Effect: On death, heal the ally with the lowest HP by 30.
         Mournveil.setActiveSkill(new Skill("Final Benediction", SkillType.HEAL, TargetType.ALLY_LOWEST_HP, 34, 3));
         Mournveil.setPassiveSkill(new Skill(
             "Sacred Remnant",
@@ -229,7 +209,7 @@ public class CardDatabase {
         // COMMON 3
         Card voidbornHulk = new Card(
             "voidborn_hulk", "Voidborn Hulk", Faction.VOID_CORRUPTED, Role.TANK, Rarity.COMMON,
-            130, 16, 10, 60, 90, 1, "cards/voidborn_hulk.png"
+            125, 16, 10, 60, 90, 1, "cards/voidborn_hulk.png"
         );
         /*
         ACTIVE: Distorted Roar
@@ -265,7 +245,7 @@ public class CardDatabase {
         // RARE 2
         Card abyssalHulk = new Card(
             "abyssal_hulk", "Abyssal Hulk", Faction.VOID_CORRUPTED, Role.TANK, Rarity.RARE,
-            160, 18, 14, 55, 105, 1, "cards/abyssal_hulk.png"
+            145, 18, 13, 55, 105, 1, "cards/abyssal_hulk.png"
         );
         /*
         ACTIVE: Void Taunt
@@ -314,7 +294,7 @@ public class CardDatabase {
         // EPIC 2
         Card shatteredVoidKnight = new Card(
             "shattered_void_knight", "Shattered Void Knight", Faction.VOID_CORRUPTED, Role.DPS, Rarity.EPIC,
-            115, 48, 8, 86, 38, 1, "cards/shattered_void_knight.png"
+            115, 45, 10, 86, 38, 1, "cards/shattered_void_knight.png"
         );
         /*
         ACTIVE: Corrupted Cleave
@@ -430,7 +410,7 @@ public class CardDatabase {
         Card Wretchwarden = new Card(
             "Wretchwarden", "Wretchwarden",
             Faction.ABYSSAL_CHURCH, Role.TANK, Rarity.COMMON,
-            135, 15, 12, 60, 95, 1,
+            130, 15, 12, 60, 95, 1,
             "cards/Wretchwarden.png"
         );
         /*
@@ -608,7 +588,7 @@ public class CardDatabase {
         Card theLastCongregation = new Card(
             "the_last_congregation", "The Last Congregation",
             Faction.ABYSSAL_CHURCH, Role.MAGE, Rarity.LEGENDARY,
-            120, 45, 8, 90, 30, 1,
+            120, 50, 10, 90, 30, 1,
             "cards/the_last_congregation.png"
         );
         /*
@@ -663,7 +643,7 @@ public class CardDatabase {
         Card wyvernHatchling = new Card(
             "wyvern_hatchling", "Wyvern Hatchling",
             Faction.DRAGON_LINEAGE, Role.DPS, Rarity.COMMON,
-            100, 28, 5, 80, 30, 1,
+            100, 29, 6, 80, 30, 1,
             "cards/wyvern_hatchling.png"
         );
         /*
@@ -706,7 +686,7 @@ public class CardDatabase {
         Card ironscaleGuardian = new Card(
             "ironscale_guardian", "Ironscale Guardian",
             Faction.DRAGON_LINEAGE, Role.TANK, Rarity.COMMON,
-            140, 15, 14, 55, 100, 1,
+            130, 15, 11, 55, 100, 1,
             "cards/ironscale_guardian.png"
         );
         /*
@@ -717,7 +697,7 @@ public class CardDatabase {
             "Hardened Scale",
             SkillType.SHIELD,
             TargetType.SELF,
-            25,
+            18,
             3
         ));
         cards.put(ironscaleGuardian.getId(), ironscaleGuardian);
@@ -746,7 +726,7 @@ public class CardDatabase {
         Card ashscaleBulwark = new Card(
             "ashscale_bulwark", "Ashscale Bulwark",
             Faction.DRAGON_LINEAGE, Role.TANK, Rarity.RARE,
-            155, 22, 16, 58, 105, 1,
+            138, 21, 13, 58, 105, 1,
             "cards/ashscale_bulwark.png"
         );
         /*
@@ -757,7 +737,7 @@ public class CardDatabase {
             "Dragon Scale",
             SkillType.SHIELD,
             TargetType.SELF,
-            45,
+            28,
             3
         ));
         cards.put(ashscaleBulwark.getId(), ashscaleBulwark);
@@ -809,7 +789,7 @@ public class CardDatabase {
         Card fallenWyrm = new Card(
             "fallen_wyrm", "Fallen Wyrm",
             Faction.DRAGON_LINEAGE, Role.DPS, Rarity.EPIC,
-            120, 48, 10, 85, 35, 1,
+            120, 48, 11, 85, 35, 1,
             "cards/fallen_wyrm.png"
         );
         /*
@@ -941,7 +921,7 @@ public class CardDatabase {
             "Guard Stance",
             SkillType.SHIELD,
             TargetType.SELF,
-            22,
+            15,
             3
         ));
         cards.put(ironVanguard.getId(), ironVanguard);
@@ -950,7 +930,7 @@ public class CardDatabase {
         Card vagrantBlade = new Card(
             "vagrant_blade", "Vagrant Blade",
             Faction.MORTAL_ASCENDANTS, Role.DPS, Rarity.COMMON,
-            100, 32, 6, 82, 30, 1,
+            98, 32, 6, 82, 30, 1,
             "cards/vagrant_blade.png"
         );
         /*
@@ -1030,7 +1010,7 @@ public class CardDatabase {
         Card oathbreakerKnight = new Card(
             "oathbreaker_knight", "Oathbreaker Knight",
             Faction.MORTAL_ASCENDANTS, Role.TANK, Rarity.RARE,
-            145, 24, 13, 70, 95, 1,
+            125, 20, 13, 70, 95, 1,
             "cards/oathbreaker_knight.png"
         );
         /*
@@ -1103,7 +1083,7 @@ public class CardDatabase {
         Card ascendedChampion = new Card(
             "ascended_champion", "Ascended Champion",
             Faction.MORTAL_ASCENDANTS, Role.DPS, Rarity.EPIC,
-            120, 46, 10, 84, 35, 1,
+            123, 46, 10, 84, 35, 1,
             "cards/ascended_champion.png"
         );
         /*
@@ -1228,7 +1208,7 @@ public class CardDatabase {
         Card duskCutthroat = new Card(
             "dusk_cutthroat", "Dusk Cutthroat",
             Faction.SHADOW_CONCLAVE, Role.DPS, Rarity.COMMON,
-            88, 30, 5, 100, 25, 1,
+            88, 35, 5, 100, 25, 1,
             "cards/dusk_cutthroat.png"
         );
         /*
@@ -1271,7 +1251,7 @@ public class CardDatabase {
         Card silentBlade = new Card(
             "silent_blade", "Silent Blade",
             Faction.SHADOW_CONCLAVE, Role.DPS, Rarity.RARE,
-            95, 40, 6, 100, 25, 1,
+            113, 41, 6, 100, 25, 1,
             "cards/silent_blade.png"
         );
         /*
@@ -1337,7 +1317,7 @@ public class CardDatabase {
         Card shadowSaint = new Card(
             "shadow_saint", "Shadow Saint",
             Faction.SHADOW_CONCLAVE, Role.ASSASSIN, Rarity.EPIC,
-            85, 45, 5, 120, 15, 1,
+            100, 48, 6, 120, 15, 1,
             "cards/shadow_saint.png"
         );
         /*
@@ -1370,7 +1350,7 @@ public class CardDatabase {
         Card eclipse = new Card(
             "eclipse", "Eclipse",
             Faction.SHADOW_CONCLAVE, Role.ASSASSIN, Rarity.EPIC,
-            90, 48, 5, 124, 15, 1,
+            98, 53, 5, 124, 15, 1,
             "cards/eclipse.png"
         );
         /*
@@ -1406,7 +1386,7 @@ public class CardDatabase {
         Card unseenSovereign = new Card(
             "unseen_sovereign", "Unseen Sovereign",
             Faction.SHADOW_CONCLAVE, Role.ASSASSIN, Rarity.LEGENDARY,
-            105, 58, 7, 130, 15, 1,
+            108, 58, 7, 130, 15, 1,
             "cards/unseen_sovereign.png"
         );
         /*
@@ -1511,28 +1491,32 @@ public class CardDatabase {
 
         // KLONING ACTIVE SKILL
         if (original.getActiveSkill() != null) {
-            Skill skill = original.getActiveSkill();
-            cloned.setActiveSkill(new Skill(
-                skill.getName(), skill.getSkillType(), skill.getTargetType(), skill.getPower(), skill.getCooldown()
-            ));
+            cloned.setActiveSkill(cloneSkill(original.getActiveSkill()));
         }
 
-        // FIX BUG: KLONING PASSIVE SKILL SEKARANG DIDUKUNG
+        // KLONING PASSIVE SKILL
         if (original.getPassiveSkill() != null) {
-            Skill skill = original.getPassiveSkill();
-            cloned.setPassiveSkill(new Skill(
-                skill.getName(), skill.getSkillType(), skill.getTargetType(), skill.getPower(), skill.getCooldown()
-            ));
+            cloned.setPassiveSkill(cloneSkill(original.getPassiveSkill()));
         }
 
-        // FIX BUG: KLONING DEATH SKILL SEKARANG DIDUKUNG
+        // KLONING DEATH SKILL
         if (original.getDeathSkill() != null) {
-            Skill skill = original.getDeathSkill();
-            cloned.setDeathSkill(new Skill(
-                skill.getName(), skill.getSkillType(), skill.getTargetType(), skill.getPower(), skill.getCooldown()
-            ));
+            cloned.setDeathSkill(cloneSkill(original.getDeathSkill()));
         }
 
         return cloned;
+    }
+
+    private static Skill cloneSkill(Skill skill) {
+        return new Skill(
+            skill.getName(),
+            skill.getSkillType(),
+            skill.getSkillTrigger(),
+            skill.getReactiveTrigger(),
+            skill.getTargetType(),
+            skill.getPower(),
+            skill.getCooldown(),
+            skill.getDuration()
+        );
     }
 }

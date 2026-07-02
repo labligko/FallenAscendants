@@ -239,8 +239,77 @@ public class SkillResolver {
                 + "\nCurrent Shield: " + target.getShield() + "\n";
         }
 
+        if (skill.getSkillType() == SkillType.BURN) {
+            return resolveReactiveStatusSkill(caster, enemyField, skill, StatusType.BURN);
+        }
+
+        if (skill.getSkillType() == SkillType.POISON) {
+            return resolveReactiveStatusSkill(caster, enemyField, skill, StatusType.POISON);
+        }
+
+        if (skill.getSkillType() == SkillType.SLOW) {
+            return resolveReactiveStatusSkill(caster, enemyField, skill, StatusType.SLOW);
+        }
+
+        if (skill.getSkillType() == SkillType.STUN) {
+            return resolveReactiveStatusSkill(caster, enemyField, skill, StatusType.STUN);
+        }
+
         return caster.getName() + "'s death skill " + skill.getName()
             + " activates, but the effect is not implemented yet.\n";
+    }
+
+    private String resolveReactiveStatusSkill(Card caster, BattleField enemyField, Skill skill, StatusType statusType) {
+        StringBuilder log = new StringBuilder();
+
+        log.append(caster.getName())
+            .append("'s death skill activates: ")
+            .append(skill.getName())
+            .append("\n");
+
+        if (skill.getTargetType() == TargetType.ALL_ENEMIES) {
+            for (Card target : enemyField.getActiveCards()) {
+                if (target != null && !target.isDead()) {
+                    target.addStatusEffect(new StatusEffect(
+                        statusType,
+                        skill.getPower(),
+                        skill.getDuration()
+                    ));
+
+                    log.append("- ")
+                        .append(target.getName())
+                        .append(" receives ")
+                        .append(statusType)
+                        .append(" for ")
+                        .append(skill.getDuration())
+                        .append(" turn(s).\n");
+                }
+            }
+
+            return log.toString();
+        }
+
+        Card target = selectSkillTarget(skill.getTargetType(), enemyField.getActiveCards());
+
+        if (target == null) {
+            return caster.getName() + "'s death skill " + skill.getName()
+                + " has no valid target.\n";
+        }
+
+        target.addStatusEffect(new StatusEffect(
+            statusType,
+            skill.getPower(),
+            skill.getDuration()
+        ));
+
+        log.append(target.getName())
+            .append(" receives ")
+            .append(statusType)
+            .append(" for ")
+            .append(skill.getDuration())
+            .append(" turn(s).\n");
+
+        return log.toString();
     }
 
     public String resolvePassiveSkill(Card card) {
@@ -250,12 +319,29 @@ public class SkillResolver {
             return "";
         }
 
+        if (skill.getSkillType() == SkillType.SHIELD) {
+            return resolvePassiveShield(card, skill);
+        }
+
         if (skill.getSkillType() == SkillType.BUFF) {
             return resolvePassiveBuff(card, skill);
         }
 
         return card.getName() + " passive " + skill.getName()
             + " is active, but effect is not implemented yet.\n";
+    }
+
+    private String resolvePassiveShield(Card card, Skill skill) {
+        if (skill.getTargetType() == TargetType.SELF) {
+            card.addShield(skill.getPower());
+
+            return card.getName() + " passive activates: " + skill.getName()
+                + "\nShield increased by " + skill.getPower()
+                + "\nCurrent Shield: " + card.getShield() + "\n";
+        }
+
+        return card.getName() + " passive " + skill.getName()
+            + " has unsupported target.\n";
     }
 
     private String resolvePassiveBuff(Card card, Skill skill) {
