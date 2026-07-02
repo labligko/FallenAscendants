@@ -118,7 +118,17 @@ public class BattleManager {
             }
 
             log.append(skillLog).append("\n");
-            log.append(handleDeaths());
+
+            String deathLog = handleDeaths();
+
+            if (!deathLog.isBlank()) {
+                log.append(deathLog);
+            }
+
+            turnQueue.rebuildRemainingQueue();
+
+            log.append("\n");
+            log.append(turnQueue.getQueueReport());
 
             battleLog.add(log.toString());
 
@@ -191,17 +201,20 @@ public class BattleManager {
             log.append(counterEffectLog);
         }
 
-        boolean targetDead = target.isDead();
-
         String deathLog = handleDeaths();
 
         if (!deathLog.isBlank()) {
             log.append(deathLog);
         }
 
+        turnQueue.rebuildRemainingQueue();
+
         if (attacker.getActiveSkill() != null) {
             attacker.getActiveSkill().reduceCooldown();
         }
+
+        log.append("\n");
+        log.append(turnQueue.getQueueReport());
 
         battleLog.add(log.toString());
 
@@ -320,6 +333,10 @@ public class BattleManager {
         battleLog.add(log.toString());
 
         return log.toString();
+    }
+
+    public String getTurnQueueReport() {
+        return turnQueue.getQueueReport();
     }
 
     public boolean isBattleOver() {

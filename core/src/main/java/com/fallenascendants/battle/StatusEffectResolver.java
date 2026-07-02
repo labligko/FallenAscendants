@@ -75,6 +75,18 @@ public class StatusEffectResolver {
             + "Effective SPD: " + card.getEffectiveSpd() + "\n";
     }
 
+    public int calculateEffectiveSpd(Card card) {
+        int effectiveSpd = card.getSpd();
+
+        for (StatusEffect statusEffect : card.getStatusEffects()) {
+            if (statusEffect.getStatusType() == StatusType.SLOW) {
+                effectiveSpd -= statusEffect.getPower();
+            }
+        }
+
+        return Math.max(1, effectiveSpd);
+    }
+
     private String applyStun(Card card, StatusEffect effect) {
         return card.getName() + " is stunned.\n";
     }

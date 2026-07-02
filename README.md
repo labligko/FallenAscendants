@@ -78,6 +78,10 @@ Factions:
 - `core`: Main module containing game logic, screens, models, battle system, and data structures.
 - `lwjgl3`: Desktop launcher module used to run the game on PC.
 
+## Documentation
+
+- [Struktur Data](docs/STRUCTURE_DATA.md)
+
 ## How to Clone and Run
 
 ### 1. Clone Repository
