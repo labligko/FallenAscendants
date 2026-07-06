@@ -35,14 +35,14 @@ public class CardDatabase {
         cards.put(ashveilAcolyte.getId(), ashveilAcolyte);
 
         // COMMON 2
-        Card Veilsworn = new Card(
-            "Veilsworn", "Veilsworn", Faction.CELESTIAL_REMNANTS, Role.SUPPORT, Rarity.COMMON,
-            95, 14, 8, 80, 20, 1, "cards/Veilsworn.png"
+        Card veilsworn = new Card(
+            "veilsworn", "Veilsworn", Faction.CELESTIAL_REMNANTS, Role.SUPPORT, Rarity.COMMON,
+            95, 14, 8, 80, 20, 1, "cards/veilsworn.png"
         );
         // ACTIVE: Lesser Ward
         // Effect: Gain Shield 18.
-        Veilsworn.setActiveSkill(new Skill("Lesser Ward", SkillType.SHIELD, TargetType.SELF, 18, 3));
-        cards.put(Veilsworn.getId(), Veilsworn);
+        veilsworn.setActiveSkill(new Skill("Lesser Ward", SkillType.SHIELD, TargetType.SELF, 18, 3));
+        cards.put(veilsworn.getId(), veilsworn);
 
         // COMMON 3
         Card thorngateSentinel = new Card(
@@ -141,9 +141,9 @@ public class CardDatabase {
         cards.put(vaelTheUncrowned.getId(), vaelTheUncrowned);
 
         // LEGENDARY 1
-        Card Mournveil = new Card(
-            "Mournveil", "Mournveil", Faction.CELESTIAL_REMNANTS, Role.HEALER, Rarity.LEGENDARY,
-            120, 18, 10, 92, 20, 1, "cards/Mournveil.png"
+        Card mournveil = new Card(
+            "mournveil", "Mournveil", Faction.CELESTIAL_REMNANTS, Role.HEALER, Rarity.LEGENDARY,
+            120, 18, 10, 92, 20, 1, "cards/mournveil.png"
         );
         // ACTIVE: Final Benediction
         // Effect: Heal the ally with the lowest HP by 34.
@@ -153,8 +153,8 @@ public class CardDatabase {
 
         // REACTIVE: Last Miracle
         // Effect: On death, heal the ally with the lowest HP by 30.
-        Mournveil.setActiveSkill(new Skill("Final Benediction", SkillType.HEAL, TargetType.ALLY_LOWEST_HP, 34, 3));
-        Mournveil.setPassiveSkill(new Skill(
+        mournveil.setActiveSkill(new Skill("Final Benediction", SkillType.HEAL, TargetType.ALLY_LOWEST_HP, 34, 3));
+        mournveil.setPassiveSkill(new Skill(
             "Sacred Remnant",
             SkillType.SHIELD,
             SkillTrigger.PASSIVE,
@@ -164,7 +164,7 @@ public class CardDatabase {
             0,
             0
         ));
-        Mournveil.setDeathSkill(new Skill(
+        mournveil.setDeathSkill(new Skill(
             "Last Miracle",
             SkillType.HEAL,
             SkillTrigger.REACTIVE,
@@ -174,7 +174,7 @@ public class CardDatabase {
             0,
             0
         ));
-        cards.put(Mournveil.getId(), Mournveil);
+        cards.put(mournveil.getId(), mournveil);
 
         // ====================================================================
         // 2. VOID CORRUPTED (10 Cards)
@@ -406,24 +406,24 @@ public class CardDatabase {
         cards.put(sunkenVessel.getId(), sunkenVessel);
 
         // COMMON 3
-        Card Wretchwarden = new Card(
-            "Wretchwarden", "Wretchwarden",
+        Card wretchwarden = new Card(
+            "wretchwarden", "Wretchwarden",
             Faction.ABYSSAL_CHURCH, Role.TANK, Rarity.COMMON,
             130, 15, 12, 60, 95, 1,
-            "cards/Wretchwarden.png"
+            "cards/wretchwarden.png"
         );
         /*
         ACTIVE: Dark Taunt
         Effect: Increase own aggro by 35.
         */
-        Wretchwarden.setActiveSkill(new Skill(
+        wretchwarden.setActiveSkill(new Skill(
             "Dark Taunt",
             SkillType.TAUNT,
             TargetType.SELF,
             35,
             3
         ));
-        cards.put(Wretchwarden.getId(), Wretchwarden);
+        cards.put(wretchwarden.getId(), wretchwarden);
 
         // COMMON 4
         Card abyssalThrall = new Card(
@@ -1112,11 +1112,11 @@ public class CardDatabase {
         cards.put(ascendedChampion.getId(), ascendedChampion);
 
         // LEGENDARY 1
-        Card firstAscendant = new Card(
-            "first_ascendant", "The First Ascendant",
+        Card theFirstAscendant = new Card(
+            "the_first_ascendant", "The First Ascendant",
             Faction.MORTAL_ASCENDANTS, Role.MAGE, Rarity.LEGENDARY,
             125, 52, 9, 88, 25, 1,
-            "cards/first_ascendant.png"
+            "cards/the_first_ascendant.png"
         );
         /*
         ACTIVE: Stolen Divinity
@@ -1128,14 +1128,14 @@ public class CardDatabase {
         REACTIVE: Divine Shatter
         Effect: On death, deal 45 damage to all enemies.
         */
-        firstAscendant.setActiveSkill(new Skill(
+        theFirstAscendant.setActiveSkill(new Skill(
             "Stolen Divinity",
             SkillType.DAMAGE,
             TargetType.ALL_ENEMIES,
             40,
             3
         ));
-        firstAscendant.setPassiveSkill(new Skill(
+        theFirstAscendant.setPassiveSkill(new Skill(
             "Aura of Ascendancy",
             SkillType.SHIELD,
             SkillTrigger.PASSIVE,
@@ -1145,7 +1145,7 @@ public class CardDatabase {
             0,
             0
         ));
-        firstAscendant.setDeathSkill(new Skill(
+        theFirstAscendant.setDeathSkill(new Skill(
             "Divine Shatter",
             SkillType.DAMAGE,
             SkillTrigger.REACTIVE,
@@ -1155,7 +1155,7 @@ public class CardDatabase {
             0,
             0
         ));
-        cards.put(firstAscendant.getId(), firstAscendant);
+        cards.put(theFirstAscendant.getId(), theFirstAscendant);
 
         // ====================================================================
         // 6. SHADOW CONCLAVE (10 Cards)
