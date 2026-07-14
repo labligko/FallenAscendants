@@ -22,6 +22,10 @@ public class Deck {
             return false;
         }
 
+        if (cards.contains(card)) {
+            return false;
+        }
+
         cards.add(card);
         return true;
     }

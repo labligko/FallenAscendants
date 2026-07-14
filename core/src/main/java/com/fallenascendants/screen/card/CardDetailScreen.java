@@ -50,7 +50,7 @@ public class CardDetailScreen implements Screen {
         Gdx.input.setInputProcessor(stage);
         skin = new Skin(Gdx.files.internal("ui/uiskin.json"));
 
-        backgroundTexture = new Texture(Gdx.files.internal("background_lobby/UpgradeBackground.png"));
+        backgroundTexture = new Texture(Gdx.files.internal("background/background_lobby/UpgradeBackground.png"));
         backgroundTexture.setFilter(Texture.TextureFilter.Linear, Texture.TextureFilter.Linear);
         Image bg = new Image(backgroundTexture);
         bg.setSize(1280, 720);
@@ -62,13 +62,13 @@ public class CardDetailScreen implements Screen {
             rarityStr = card.getRarity().name().toLowerCase();
         }
 
-        String framePath = "commonFrame.png"; // Default awal
+        String framePath = "assets/card_frames/commonFrame.png"; // Default awal
         switch (rarityStr) {
-            case "rare":      framePath = "rareFrame.png"; break;
-            case "epic":      framePath = "epicFrame.png"; break;
-            case "legendary": framePath = "legendaryFrame.png"; break;
+            case "rare":      framePath = "assets/card_frames/rareFrame.png"; break;
+            case "epic":      framePath = "assets/card_frames/epicFrame.png"; break;
+            case "legendary": framePath = "assets/card_frames/legendaryFrame.png"; break;
             case "special":
-            case "limited":   framePath = "specialFrame.png"; break;
+            case "limited":   framePath = "assets/card_frames/specialFrame.png"; break;
         }
 
         cardFrameTexture = new Texture(Gdx.files.internal(framePath));
