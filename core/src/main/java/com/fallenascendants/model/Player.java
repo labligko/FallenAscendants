@@ -42,6 +42,54 @@ public class Player {
         return true;
     }
 
+    public int getDuplicateCount(String cardId, Card excludeCard) {
+        int count = 0;
+        for (Card card : collection) {
+            if (card != excludeCard && card.getId().equals(cardId)) {
+                count++;
+            }
+        }
+        return count;
+    }
+
+    public boolean upgradeCard(Card targetCard) {
+        if (targetCard == null || !collection.contains(targetCard)) {
+            return false;
+        }
+
+        int requiredDuplicates = targetCard.getLevel();
+        int requiredGold = targetCard.getLevel() * 100;
+
+        if (gold < requiredGold) {
+            return false;
+        }
+
+        int availableDuplicates = getDuplicateCount(targetCard.getId(), targetCard);
+        if (availableDuplicates < requiredDuplicates) {
+            return false;
+        }
+
+        // Spend gold
+        spendGold(requiredGold);
+
+        // Remove duplicate cards from collection
+        int removedCount = 0;
+        for (int i = collection.size() - 1; i >= 0; i--) {
+            Card card = collection.get(i);
+            if (card != targetCard && card.getId().equals(targetCard.getId())) {
+                collection.remove(i);
+                removedCount++;
+                if (removedCount == requiredDuplicates) {
+                    break;
+                }
+            }
+        }
+
+        // Perform level up
+        targetCard.levelUp();
+        return true;
+    }
+
     public String getName() {
         return name;
     }

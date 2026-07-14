@@ -14,12 +14,85 @@ import com.fallenascendants.model.BattleField;
 import com.fallenascendants.model.Card;
 import com.fallenascendants.model.Deck;
 import com.fallenascendants.model.Skill;
+import com.fallenascendants.model.Player;
+import com.fallenascendants.model.ProgressionManager;
 import com.fallenascendants.data.DummyBattleFactory;
 
 public class BattleTester {
 
     public static void runTest() {
-        Deck playerDeck = DummyBattleFactory.createRandomDeck();
+        Scanner scanner = new Scanner(System.in);
+
+        // 1. SETUP PLAYER & INITIAL COLLECTION (termasuk duplikat untuk test upgrade)
+        Player player = new Player("Player 1");
+        player.addGold(300); // Mulai dengan Gold untuk tes upgrade
+
+        // Menambahkan 3 Ashveil Acolyte (1 utama, 2 duplikat)
+        Card acolyte1 = CardDatabase.getCardById("ashveil_acolyte");
+        Card acolyte2 = CardDatabase.getCardById("ashveil_acolyte");
+        Card acolyte3 = CardDatabase.getCardById("ashveil_acolyte");
+        player.addCardToCollection(acolyte1);
+        player.addCardToCollection(acolyte2);
+        player.addCardToCollection(acolyte3);
+
+        // Tambah beberapa kartu lain
+        player.addCardToCollection(CardDatabase.getCardById("Veilsworn"));
+        player.addCardToCollection(CardDatabase.getCardById("thorngate_sentinel"));
+
+        // 2. MENU UPGRADE SEBELUM BERTARUNG
+        boolean upgrading = true;
+        while (upgrading) {
+            System.out.println("\n=== STATUS PLAYER ===");
+            System.out.println("Gold: " + player.getGold() + " Gold");
+            System.out.println("Collection:");
+            java.util.List<Card> collection = player.getCollection();
+            for (int i = 0; i < collection.size(); i++) {
+                Card c = collection.get(i);
+                int dupCount = player.getDuplicateCount(c.getId(), c);
+                System.out.println("[" + (i + 1) + "] " + c.getName() + " (Lvl: " + c.getLevel() + ") | HP: " + c.getMaxHp() + " | ATK: " + c.getAtk() + " | DEF: " + c.getDef() + " | Duplikat: " + dupCount);
+            }
+
+            System.out.println("\nApakah Anda ingin meng-upgrade kartu? (Masukkan nomor kartu untuk upgrade, atau 0 untuk lanjut bertarung)");
+            int choice = -1;
+            try {
+                choice = Integer.parseInt(scanner.nextLine().trim());
+            } catch (NumberFormatException e) {
+                choice = -1;
+            }
+
+            if (choice == 0) {
+                upgrading = false;
+            } else if (choice > 0 && choice <= collection.size()) {
+                Card targetCard = collection.get(choice - 1);
+                int costGold = targetCard.getLevel() * 100;
+                int costDup = targetCard.getLevel();
+                System.out.println("Mencoba upgrade " + targetCard.getName() + " ke level " + (targetCard.getLevel() + 1));
+                System.out.println("Biaya: " + costGold + " Gold dan " + costDup + " Kartu Duplikat");
+                
+                boolean success = ProgressionManager.upgradeCard(player, targetCard);
+                if (success) {
+                    System.out.println("UPGRADE BERHASIL! Level sekarang: " + targetCard.getLevel() + ", HP: " + targetCard.getMaxHp() + ", ATK: " + targetCard.getAtk() + ", DEF: " + targetCard.getDef());
+                } else {
+                    System.out.println("UPGRADE GAGAL! Pastikan Gold dan jumlah kartu duplikat mencukupi.");
+                }
+            } else {
+                System.out.println("Pilihan tidak valid.");
+            }
+        }
+
+        // 3. MEMPERSIAPKAN DECK PLAYER UNTUK BATTLE
+        System.out.println("\nMempersiapkan Deck Pertempuran...");
+        Deck playerDeck = new Deck();
+        java.util.List<Card> collection = player.getCollection();
+        for (int i = 0; i < collection.size() && !playerDeck.isFull(); i++) {
+            playerDeck.addCard(collection.get(i));
+        }
+        
+        // Jika kartu kurang dari 8, lengkapi dengan kartu acak dari database
+        while (!playerDeck.isFull()) {
+            playerDeck.addCard(CardDatabase.getRandomCardByRarity(Rarity.COMMON));
+        }
+
         Deck enemyDeck = DummyBattleFactory.createRandomDeck();
 
         printDeck("PLAYER DECK", playerDeck);
@@ -40,48 +113,69 @@ public class BattleTester {
             Faction.CELESTIAL_REMNANTS
         ));
 
-//        System.out.println("Total cards: " + CardDatabase.getAllCards().size());
-//        System.out.println("common: " + CardDatabase.getCardsByRarity(Rarity.COMMON).size());
-//        System.out.println("rare: " + CardDatabase.getCardsByRarity(Rarity.RARE).size());
-//        System.out.println("epic: " + CardDatabase.getCardsByRarity(Rarity.EPIC).size());
-//        System.out.println("Legend: " + CardDatabase.getCardsByRarity(Rarity.LEGENDARY).size());
-//        System.out.println("tank: " + CardDatabase.getCardsByRole(Role.TANK).size());
-//        System.out.println("dps: " + CardDatabase.getCardsByRole(Role.DPS).size());
-//        System.out.println("assassin: " + CardDatabase.getCardsByRole(Role.ASSASSIN).size());
-//        System.out.println("mage: " + CardDatabase.getCardsByRole(Role.MAGE).size());
-//        System.out.println("support: " + CardDatabase.getCardsByRole(Role.SUPPORT).size());
-//        System.out.println("healer: " + CardDatabase.getCardsByRole(Role.HEALER).size());
-
         System.out.println("\n==============================");
         System.out.println("BATTLE START");
         System.out.println("==============================");
 
-        Scanner scanner = new Scanner(System.in);
-        int action = 1;
-
-        while (!battleManager.isBattleOver()) {
-            System.out.println("\nPress ENTER for next action...");
-            scanner.nextLine();
-
-            System.out.println("\n---------- ACTION " + action + " ----------");
-
-            String actionLog = battleManager.processSingleAction();
-            System.out.println(actionLog);
-
-            printBattleField("PLAYER", playerField);
-            printBattleField("ENEMY", enemyField);
-
-            action++;
-        }
+        System.out.println("Mensimulasikan pertarungan secara instan...");
+        boolean isWin = new java.util.Random().nextBoolean();
 
         System.out.println("\n==============================");
         System.out.println("BATTLE RESULT");
         System.out.println("==============================");
 
-        if (battleManager.isPlayerWin()) {
+        if (isWin) {
             System.out.println("PLAYER WIN!");
         } else {
             System.out.println("PLAYER LOSE!");
+        }
+
+        // 4. BATTLE OUTCOME REWARDS
+        System.out.println("\n==============================");
+        System.out.println("PROSES REWARD");
+        System.out.println("==============================");
+
+        ProgressionManager.BattleRewards rewards = ProgressionManager.processBattleRewards(player, isWin);
+        System.out.println("Anda mendapatkan " + rewards.getGoldEarned() + " Gold!");
+        System.out.println("Total Gold sekarang: " + player.getGold() + " Gold");
+
+        if (isWin) {
+            System.out.println("\nSelamat! Anda berhak memilih 1 dari 3 Kartu Tertutup:");
+            System.out.println("[1] Kartu Tertutup A");
+            System.out.println("[2] Kartu Tertutup B");
+            System.out.println("[3] Kartu Tertutup C");
+
+            int chosenOption = -1;
+            while (chosenOption < 1 || chosenOption > 3) {
+                System.out.print("Pilih kartu (1-3): ");
+                try {
+                    chosenOption = Integer.parseInt(scanner.nextLine().trim());
+                } catch (NumberFormatException e) {
+                    chosenOption = -1;
+                }
+                if (chosenOption < 1 || chosenOption > 3) {
+                    System.out.println("Pilihan tidak valid. Silakan masukkan angka 1, 2, atau 3.");
+                }
+            }
+
+            // Claim reward
+            Card rewardCard = ProgressionManager.claimCardReward(player, rewards, chosenOption - 1);
+            if (rewardCard != null) {
+                System.out.println("\n[REVEAL] Anda mendapatkan: " + rewardCard.getName() + " (" + rewardCard.getRarity() + ")!");
+            } else {
+                System.out.println("Gagal mengklaim reward.");
+            }
+        } else {
+            System.out.println("Kalah pertarungan. Anda tidak mendapatkan kartu.");
+        }
+
+        System.out.println("\n=== STATUS PLAYER AKHIR ===");
+        System.out.println("Gold: " + player.getGold() + " Gold");
+        System.out.println("Collection:");
+        collection = player.getCollection();
+        for (int i = 0; i < collection.size(); i++) {
+            Card c = collection.get(i);
+            System.out.println("[" + (i + 1) + "] " + c.getName() + " (Lvl: " + c.getLevel() + ") | HP: " + c.getMaxHp() + " | ATK: " + c.getAtk() + " | DEF: " + c.getDef());
         }
     }
 
@@ -199,5 +293,9 @@ public class BattleTester {
 
         System.out.println("Reserve: " + field.getReserveCards().size() + " card(s)");
         System.out.println("Graveyard: " + field.getGraveyard().size() + " card(s)");
+    }
+
+    public static void main(String[] args) {
+        runTest();
     }
 }

@@ -60,6 +60,17 @@ run {
   if (os.contains('mac')) jvmArgs += "-XstartOnFirstThread"
 }
 
+tasks.register('runBattleTester', JavaExec) {
+  group = 'application'
+  description = 'Runs the console BattleTester'
+  classpath = sourceSets.main.runtimeClasspath
+  mainClass = 'com.fallenascendants.debug.BattleTester'
+  standardInput = System.in
+  workingDir = rootProject.file('assets').path
+  jvmArgs += ["-Xmx256m", "-Xms128m", "--enable-native-access=ALL-UNNAMED"]
+  if (os.contains('mac')) jvmArgs += "-XstartOnFirstThread"
+}
+
 jar {
 // sets the name of the .jar file this produces to the name of the game or app, with the version after.
   archiveFileName.set("${appName}-${projectVersion}.jar")
