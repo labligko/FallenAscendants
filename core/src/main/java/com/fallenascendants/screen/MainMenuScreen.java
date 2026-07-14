@@ -1,6 +1,8 @@
 package com.fallenascendants.screen;
 
 import com.fallenascendants.screen.card.CollectionScreen;
+import com.fallenascendants.screen.deck.DeckBuilderScreen;
+
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.Screen;
@@ -192,7 +194,7 @@ public class MainMenuScreen implements Screen {
         deckButton.addListener(new ClickListener() {
             @Override
             public void clicked(InputEvent event, float x, float y) {
-                System.out.println("Tombol Deck Builder Ditekan!");
+                game.setScreen(new DeckBuilderScreen(game));
             }
         });
 

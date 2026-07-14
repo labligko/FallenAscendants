@@ -264,4 +264,28 @@ public class Card {
     public int calculateShieldAbsorption(int damage) {
         return Math.min(shield, damage);
     }
+
+    @Override
+    public boolean equals(Object obj) {
+        // 1. Jika referensi memorinya sama, otomatis itu kartu yang sama
+        if (this == obj) return true;
+
+        // 2. Jika objek pembanding null atau tipenya bukan Card, pasti tidak sama
+        if (obj == null || getClass() != obj.getClass()) return false;
+
+        // 3. Konversi objek menjadi Card dan bandingkan ID uniknya
+        Card other = (Card) obj;
+        if (id == null) {
+            return other.id == null;
+        } else {
+            return id.equals(other.id);
+        }
+    }
+
+    @Override
+    public int hashCode() {
+        // Wajib di-override jika equals() di-override agar konsisten di struktur data Java
+        return id != null ? id.hashCode() : 0;
+    }
+
 }
