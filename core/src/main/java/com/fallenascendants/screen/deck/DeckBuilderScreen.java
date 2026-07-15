@@ -43,7 +43,8 @@ public class DeckBuilderScreen implements Screen {
         Gdx.input.setInputProcessor(stage);
         skin = new Skin(Gdx.files.internal("ui/uiskin.json"));
 
-        player = new Player("Reyzz");
+        // Menggunakan Player yang sama dengan seluruh game (gold & collection persist antar screen)
+        player = game.getPlayer();
 
         stage.addListener(new InputListener() {
             @Override

@@ -42,7 +42,7 @@ public class MainMenuScreen implements Screen {
     private Texture buttonHover;
     private Texture buttonPressed;
 
-    private TextButton playButton, collectionButton, deckButton, exitButton;
+    private TextButton playButton, collectionButton, deckButton, settingsButton, exitButton;
     private float blinkTime = 0;
 
     public MainMenuScreen(FallenAscendantsGame game) {
@@ -158,19 +158,26 @@ public class MainMenuScreen implements Screen {
         playButton = new TextButton("PLAY BATTLE", buttonStyle);
         collectionButton = new TextButton("CARD ALBUM", buttonStyle);
         deckButton = new TextButton("DECK BUILDER", buttonStyle);
+        settingsButton = new TextButton("SETTINGS", buttonStyle);
         exitButton = new TextButton("EXIT GAME", buttonStyle);
+
+        TextButton[] allButtons = { playButton, collectionButton, deckButton, settingsButton, exitButton };
+        for (TextButton btn : allButtons) {
+            btn.getLabelCell().padTop(-1 * scale);
+        }
 
         // REKAYASA TOTAL STRUKTUR LAYOUT GRID 1280x720
         // Logo diturunkan ke posisi tengah atas ideal (padTop: 40) dan jarak bottom dinormalisasi (padBottom: -30)
-        mainTable.add(logoImage).size(450, 300).padTop(40).padBottom(-30).row();
+        mainTable.add(logoImage).size(227, 227).padBottom(0).padTop(40).row();
 
         // Kalibrasi bumper padBottom disesuaikan presisi agar tidak tumpang tindih ekstrem
-        mainTable.add(playButton).width(240).height(160).padBottom(-75).row();
-        mainTable.add(collectionButton).width(240).height(160).padBottom(-75).row();
-        mainTable.add(deckButton).width(240).height(160).padBottom(-75).row();
+        mainTable.add(playButton).width(216).height(85).padBottom(0).row();
+        mainTable.add(collectionButton).width(216).height(85).padBottom(0).row();
+        mainTable.add(deckButton).width(216).height(85).padBottom(0).row();
+        mainTable.add(settingsButton).width(216).height(85).padBottom(0).row();
 
         // Tombol terakhir diberi padBottom positif (55) untuk mendorong rangkaian tombol menjauh dari teks F11
-        mainTable.add(exitButton).width(240).height(160).padBottom(55).row();
+        mainTable.add(exitButton).width(216).height(85).padBottom(50).row();
 
         Label.LabelStyle footerStyle = new Label.LabelStyle(buttonFont, new Color(0.6f, 0.6f, 0.6f, 1f));
         blinkLabel = new Label("Press [F11] for Fullscreen / [ESC] to Exit Fullscreen", footerStyle);
@@ -198,9 +205,17 @@ public class MainMenuScreen implements Screen {
             }
         });
 
+        settingsButton.addListener(new ClickListener() {
+            @Override
+            public void clicked(InputEvent event, float x, float y) {
+                game.setScreen(new SettingsScreen(game));
+            }
+        });
+
         exitButton.addListener(new ClickListener() {
             @Override
             public void clicked(InputEvent event, float x, float y) {
+                game.saveProgress();
                 Gdx.app.exit();
             }
         });

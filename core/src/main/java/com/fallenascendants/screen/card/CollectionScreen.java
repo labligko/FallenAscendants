@@ -63,8 +63,8 @@ public class CollectionScreen implements Screen {
         Gdx.input.setInputProcessor(stage);
         skin = new Skin(Gdx.files.internal("ui/uiskin.json"));
 
-        // Inisialisasi Player untuk manajemen testing fungsionalitas kepemilikan
-        player = new Player("Reyzz");
+        // Menggunakan Player yang sama dengan seluruh game (gold & collection persist antar screen)
+        player = game.getPlayer();
         final List<Card> allCards = CardDatabase.getAllCards();
 
         // INPUT LISTENER GLOBAL: Menangani ESC (Kembali) dan Panah Keyboard Kanan/Kiri (Halaman)
