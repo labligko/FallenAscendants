@@ -90,6 +90,12 @@ public class Player {
         return true;
     }
 
+    public void resetProgress() {
+        gold = 0;
+        collection.clear();
+        deck.clear();
+    }
+
     public String getName() {
         return name;
     }
