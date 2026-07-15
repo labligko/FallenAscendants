@@ -9,10 +9,13 @@ import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
+import com.fallenascendants.FallenAscendantsGame;
 import com.fallenascendants.model.Card;
 import com.fallenascendants.model.Player;
+import com.fallenascendants.screen.MainMenuScreen;
 
 public class DeckSlotPanel extends Table {
+    private final FallenAscendantsGame game;
     private final Player player;
     private final int MAX_DECK_SIZE = 8;
 
@@ -22,7 +25,8 @@ public class DeckSlotPanel extends Table {
 
     private final Texture buttonNormal, buttonHover, buttonPressed;
 
-    public DeckSlotPanel(Player player, BitmapFont uiFont, BitmapFont titleFont) {
+    public DeckSlotPanel(FallenAscendantsGame game, Player player, BitmapFont uiFont, BitmapFont titleFont) {
+        this.game = game;
         this.player = player;
 
         titleStyle = new Label.LabelStyle(titleFont, Color.WHITE);
@@ -79,24 +83,10 @@ public class DeckSlotPanel extends Table {
             @Override
             public void clicked(InputEvent event, float x, float y) {
                 if (player.getDeck().isValidForBattle()) {
-                    System.out.println("Deck Valid & Sukses Disimpan untuk Pertempuran!");
-
-                    // OPSI AKSI: Kembalikan player ke MainMenu setelah berhasil menyimpan strategi
-                    // Kita gunakan Gdx.app.postRunnable agar perpindahan screen aman dari crash thread
-                    Gdx.app.postRunnable(new Runnable() {
-                        @Override
-                        public void run() {
-                            // Mengakses game master dari stage internal aktor
-                            if (getStage() != null) {
-                                // Jika kamu ingin melempar screen langsung, DeckBuilderScreen butuh referensi game.
-                                // Solusi paling bersih: picu transisi balik lewat screen induknya.
-                                // Sebagai testing instan, kita bisa pakai app logger atau langsung tembak kembaliannya.
-                            }
-                        }
-                    });
-
+                    game.saveProgress();
+                    game.setScreen(new MainMenuScreen(game));
                 } else {
-                    System.out.println("Gagal simpan! Deck belum penuh untuk battle (" + player.getDeck().size() + "/8)");
+                    System.out.println("Deck is Empty");
                 }
             }
         });

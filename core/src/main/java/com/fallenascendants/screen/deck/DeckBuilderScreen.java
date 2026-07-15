@@ -93,7 +93,7 @@ public class DeckBuilderScreen implements Screen {
 
         mainSplitTable.clearChildren();
 
-        deckSlotPanel = new DeckSlotPanel(player, uiFont, titleFont);
+        deckSlotPanel = new DeckSlotPanel(game, player, uiFont, titleFont);
         collectionPoolPanel = new CollectionPoolPanel(game, player, skin, uiFont, titleFont, deckSlotPanel);
 
         mainSplitTable.add(collectionPoolPanel).width(880).expandY().fillY().top();

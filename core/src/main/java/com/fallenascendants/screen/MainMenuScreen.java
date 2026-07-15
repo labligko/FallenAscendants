@@ -1,5 +1,6 @@
 package com.fallenascendants.screen;
 
+import com.badlogic.gdx.scenes.scene2d.ui.*;
 import com.fallenascendants.screen.card.CollectionScreen;
 import com.fallenascendants.screen.deck.DeckBuilderScreen;
 
@@ -14,11 +15,6 @@ import com.badlogic.gdx.graphics.g2d.freetype.FreeTypeFontGenerator;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.InputListener;
 import com.badlogic.gdx.scenes.scene2d.Stage;
-import com.badlogic.gdx.scenes.scene2d.ui.Image;
-import com.badlogic.gdx.scenes.scene2d.ui.Label;
-import com.badlogic.gdx.scenes.scene2d.ui.Skin;
-import com.badlogic.gdx.scenes.scene2d.ui.Table;
-import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.badlogic.gdx.utils.viewport.FitViewport;
 import com.fallenascendants.FallenAscendantsGame;
@@ -187,7 +183,12 @@ public class MainMenuScreen implements Screen {
         playButton.addListener(new ClickListener() {
             @Override
             public void clicked(InputEvent event, float x, float y) {
-                System.out.println("Tombol Play Ditekan!");
+                if (!game.getPlayer().getDeck().isValidForBattle()) {
+                    Toast.show(stage, "Deck Not Found!.", 1f);
+                    return;
+                }
+
+                game.setScreen(new PreBattleScreen(game));
             }
         });
 

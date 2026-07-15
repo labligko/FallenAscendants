@@ -67,7 +67,7 @@ public class Deck {
     }
 
     public boolean isValidForBattle() {
-        return cards.size() == MAX_DECK_SIZE;
+        return !cards.isEmpty();
     }
 
     public void clear() {
