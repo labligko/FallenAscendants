@@ -72,27 +72,7 @@ public class MainMenuScreen implements Screen {
         stage.addActor(backgroundImage);
 
         skin = new Skin(Gdx.files.internal("ui/uiskin.json"));
-
-        stage.addListener(new InputListener() {
-            @Override
-            public boolean keyDown(InputEvent event, int keycode) {
-                if (keycode == Input.Keys.F11) {
-                    if (!Gdx.graphics.isFullscreen()) {
-                        Gdx.graphics.setFullscreenMode(Gdx.graphics.getDisplayMode());
-                    } else {
-                        Gdx.graphics.setWindowedMode(1280, 720);
-                    }
-                    return true;
-                }
-                if (keycode == Input.Keys.ESCAPE) {
-                    if (Gdx.graphics.isFullscreen()) {
-                        Gdx.graphics.setWindowedMode(1280, 720);
-                    }
-                    return true;
-                }
-                return false;
-            }
-        });
+        FullscreenToggle.attach(stage);
 
         mainTable = new Table();
         mainTable.setFillParent(true);
@@ -176,8 +156,8 @@ public class MainMenuScreen implements Screen {
         mainTable.add(exitButton).width(216).height(85).padBottom(50).row();
 
         Label.LabelStyle footerStyle = new Label.LabelStyle(buttonFont, new Color(0.6f, 0.6f, 0.6f, 1f));
-        blinkLabel = new Label("Press [F11] for Fullscreen / [ESC] to Exit Fullscreen", footerStyle);
-        footerTable.add(blinkLabel);
+        blinkLabel = new Label("Press [F11] for Fullscreen", footerStyle);
+        footerTable.add(blinkLabel).padBottom(-10).row();
 
         // Blok listener aksi klik tombol
         playButton.addListener(new ClickListener() {

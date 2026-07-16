@@ -335,6 +335,10 @@ public class BattleManager {
         return log.toString();
     }
 
+    public BattleField getPlayerField() {return playerField;}
+
+    public BattleField getEnemyField() {return enemyField;}
+
     public String getTurnQueueReport() {
         return turnQueue.getQueueReport();
     }

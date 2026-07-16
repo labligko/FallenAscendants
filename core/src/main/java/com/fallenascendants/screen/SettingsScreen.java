@@ -34,6 +34,7 @@ public class SettingsScreen implements Screen {
         stage = new Stage(new FitViewport(1280, 720));
         Gdx.input.setInputProcessor(stage);
         skin = new Skin(Gdx.files.internal("ui/uiskin.json"));
+        FullscreenToggle.attach(stage);
 
         mainTable = new Table();
         mainTable.setFillParent(true);

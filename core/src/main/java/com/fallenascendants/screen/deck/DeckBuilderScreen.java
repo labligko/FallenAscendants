@@ -17,6 +17,7 @@ import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.utils.viewport.FitViewport;
 import com.fallenascendants.FallenAscendantsGame;
 import com.fallenascendants.model.Player;
+import com.fallenascendants.screen.FullscreenToggle;
 import com.fallenascendants.screen.MainMenuScreen;
 
 public class DeckBuilderScreen implements Screen {
@@ -42,6 +43,7 @@ public class DeckBuilderScreen implements Screen {
         stage = new Stage(new FitViewport(1280, 720));
         Gdx.input.setInputProcessor(stage);
         skin = new Skin(Gdx.files.internal("ui/uiskin.json"));
+        FullscreenToggle.attach(stage);
 
         // Menggunakan Player yang sama dengan seluruh game (gold & collection persist antar screen)
         player = game.getPlayer();

@@ -35,9 +35,8 @@ public class PreBattleScreen implements Screen {
         stage = new Stage(new FitViewport(1280, 720));
         Gdx.input.setInputProcessor(stage);
         skin = new Skin(Gdx.files.internal("ui/uiskin.json"));
+        FullscreenToggle.attach(stage);
 
-        // Deck player diambil dari save state, deck musuh di-generate acak
-        // (pola yang sama persis kayak BattleTester.java)
         playerDeck = game.getPlayer().getDeck();
         enemyDeck = DummyBattleFactory.createRandomEnemyDeck(playerDeck.size());
 
@@ -92,16 +91,19 @@ public class PreBattleScreen implements Screen {
         for (int i = 0; i < deck.size(); i++) {
             Card card = deck.getCard(i);
             String tag = i < 5 ? "[ACTIVE]" : "[RESERVE]";
+            String activeSkillName = card.getActiveSkill() == null ? "None" : card.getActiveSkill().getName();
 
             String line = tag + " " + card.getName()
-                + " (" + card.getRole() + ", Lvl " + card.getLevel() + ")\n"
-                + "HP:" + card.getMaxHp()
+                + "\nRole: " + card.getRole() + " | Rarity: " + card.getRarity() + " | Lvl " + card.getLevel()
+                + " HP:" + card.getMaxHp()
                 + " ATK:" + card.getAtk()
                 + " DEF:" + card.getDef()
-                + " SPD:" + card.getSpd();
+                + " SPD:" + card.getSpd()
+                + " Aggro:" + card.getAggro()
+                + "\nActive Skill: " + activeSkillName;
 
             Label cardLabel = new Label(line, skin);
-            column.add(cardLabel).padBottom(8).left().row();
+            column.add(cardLabel).padBottom(10).left().row();
         }
 
         return column;

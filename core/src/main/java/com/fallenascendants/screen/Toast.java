@@ -53,7 +53,7 @@ public class Toast {
             FreeTypeFontGenerator generator = new FreeTypeFontGenerator(Gdx.files.internal("fonts/CinzelDecorative-Regular.ttf"));
             FreeTypeFontGenerator.FreeTypeFontParameter parameter = new FreeTypeFontGenerator.FreeTypeFontParameter();
             parameter.size = 26;
-            parameter.color = new Color(0.85f, 0.72f, 0.4f, 1f); // gold, senada tema Dark Souls/Elden Ring
+            parameter.color = Color.WHITE;
             parameter.borderWidth = 2;
             parameter.borderColor = Color.BLACK;
             BitmapFont font = generator.generateFont(parameter);
