@@ -57,7 +57,7 @@ public class DeckBuilderScreen implements Screen {
             }
         });
 
-        backgroundTexture = new Texture(Gdx.files.internal("background/background_lobby/UpgradeBackground.png"));
+        backgroundTexture = new Texture(Gdx.files.internal("background/background_lobby/DeckBuilderBackground.png"));
         backgroundTexture.setFilter(Texture.TextureFilter.Linear, Texture.TextureFilter.Linear);
         Image bg = new Image(backgroundTexture);
         bg.setSize(1280, 720);
