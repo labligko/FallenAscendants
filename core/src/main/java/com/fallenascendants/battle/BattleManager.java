@@ -339,6 +339,8 @@ public class BattleManager {
 
     public BattleField getEnemyField() {return enemyField;}
 
+    public List<Card> getUpcomingTurnOrder(int limit) {return turnQueue.getUpcomingOrder(limit);}
+
     public String getTurnQueueReport() {
         return turnQueue.getQueueReport();
     }

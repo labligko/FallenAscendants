@@ -23,6 +23,8 @@ public class Card {
     private int aggro;
     private int level;
     private int shield;
+    private int baseAtk;
+    private int baseDef;
     private int temporarySpdReduction;
 
     private Skill passiveSkill;
@@ -50,6 +52,8 @@ public class Card {
         this.aggro = aggro;
         this.level = level;
         this.imagePath = imagePath;
+        this.baseAtk = atk;
+        this.baseDef = def;
         this.temporarySpdReduction = 0;
     }
 
@@ -121,6 +125,17 @@ public class Card {
         atk += 3;
         def += 2;
         currentHp = maxHp;
+        baseAtk += 3;
+        baseDef += 2;
+    }
+
+    public void resetForBattle() {
+        currentHp = maxHp;
+        shield = 0;
+        temporarySpdReduction = 0;
+        statusEffects.clear();
+        atk = baseAtk;
+        def = baseDef;
     }
 
     public void addStatusEffect(StatusEffect effect) {

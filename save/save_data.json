@@ -1,1 +1,22 @@
-{}
+{
+"gold": 420,
+"collection": [
+	{
+		"cardId": "iron_vanguard",
+		"level": 1
+	},
+	{
+		"cardId": "scalebinder",
+		"level": 1
+	},
+	{
+		"cardId": "eclipse",
+		"level": 1
+	},
+	{
+		"cardId": "fadeborn_scout",
+		"level": 1
+	}
+],
+"battleSpeed": "INSTANT"
+}

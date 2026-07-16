@@ -122,6 +122,21 @@ public class TurnQueue {
         return report.toString();
     }
 
+    public List<Card> getUpcomingOrder(int limit) {
+        List<Card> result = new ArrayList<>();
+        PriorityQueue<TurnEntry> copy = new PriorityQueue<>(queue);
+
+        while (!copy.isEmpty() && result.size() < limit) {
+            TurnEntry entry = copy.poll();
+
+            if (entry.card != null && !entry.card.isDead()) {
+                result.add(entry.card);
+            }
+        }
+
+        return result;
+    }
+
     public boolean isEmpty() {
         return queue.isEmpty();
     }

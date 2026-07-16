@@ -2,6 +2,7 @@ package com.fallenascendants.screen;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Screen;
+import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.Stage;
@@ -16,8 +17,10 @@ import com.badlogic.gdx.utils.viewport.FitViewport;
 import com.fallenascendants.FallenAscendantsGame;
 import com.fallenascendants.battle.BattleManager;
 import com.fallenascendants.battle.FactionCounterGraph;
+import com.fallenascendants.enumtype.BattleSpeed;
 import com.fallenascendants.enumtype.Faction;
 import com.fallenascendants.model.Card;
+import com.fallenascendants.model.ProgressionManager;
 import com.fallenascendants.model.StatusEffect;
 
 import java.util.List;
@@ -33,7 +36,9 @@ public class BattleScreen implements Screen {
     private Label logLabel;
     private ScrollPane scrollPane;
     private Label resultLabel;
+    private Label speedLabel;
     private TextButton nextButton;
+    private TextButton rewardButton;
 
     private final Label[] enemySlotLabels = new Label[5];
     private final Label[] playerSlotLabels = new Label[5];
@@ -43,6 +48,13 @@ public class BattleScreen implements Screen {
 
     private Label enemySummaryLabel;
     private Label playerSummaryLabel;
+
+    private static final int TURN_ORDER_PREVIEW_SIZE = 6;
+    private final Label[] turnOrderLabels = new Label[TURN_ORDER_PREVIEW_SIZE];
+
+    private static final float NORMAL_INTERVAL = 1.2f;
+    private static final float FAST_INTERVAL = 0.5f;
+    private float stepTimer = 0f;
 
     public BattleScreen(FallenAscendantsGame game, BattleManager battleManager) {
         this.game = game;
@@ -54,6 +66,7 @@ public class BattleScreen implements Screen {
         stage = new Stage(new FitViewport(1280, 720));
         Gdx.input.setInputProcessor(stage);
         skin = new Skin(Gdx.files.internal("ui/uiskin.json"));
+
         FullscreenToggle.attach(stage);
 
         Table root = new Table();
@@ -89,17 +102,23 @@ public class BattleScreen implements Screen {
         resultLabel.setFontScale(1.3f);
         root.add(resultLabel).padBottom(10).row();
 
+        speedLabel = new Label("Speed: " + formatSpeedLabel(game.getBattleSpeed()), skin);
+        speedLabel.setFontScale(0.95f);
+        speedLabel.setColor(0.75f, 0.75f, 0.75f, 1f);
+        root.add(speedLabel).padBottom(10).row();
+
         Table buttonRow = new Table();
 
         nextButton = new TextButton("Next Action", skin);
         nextButton.addListener(new ClickListener() {
             @Override
             public void clicked(InputEvent event, float x, float y) {
+                stepTimer = 0f;
                 stepBattle();
             }
         });
 
-        TextButton backButton = new TextButton("Back to Menu", skin);
+        TextButton backButton = new TextButton("Back to Menu (Forfeit)", skin);
         backButton.addListener(new ClickListener() {
             @Override
             public void clicked(InputEvent event, float x, float y) {
@@ -107,11 +126,123 @@ public class BattleScreen implements Screen {
             }
         });
 
+        rewardButton = new TextButton("Claim Rewards", skin);
+        rewardButton.setDisabled(true);
+        rewardButton.addListener(new ClickListener() {
+            @Override
+            public void clicked(InputEvent event, float x, float y) {
+                if (rewardButton.isDisabled()) {
+                    return;
+                }
+                ProgressionManager.BattleRewards rewards =
+                    ProgressionManager.processBattleRewards(game.getPlayer(), battleManager.isPlayerWin());
+                game.setScreen(new RewardScreen(game, rewards));
+            }
+        });
+
         buttonRow.add(nextButton).width(200).padRight(20);
-        buttonRow.add(backButton).width(200);
+        buttonRow.add(rewardButton).width(200).padRight(20);
+        buttonRow.add(backButton).width(220);
         root.add(buttonRow);
 
+        // Isi panel status dengan kondisi awal (sebelum aksi pertama jalan)
         refreshBattlefieldPanel();
+
+        // Turn order panel: actor terpisah, gak ikut alur "root" sama sekali,
+        // biar posisi tombol Next/dkk gak kegeser. Ditaro manual di pojok kanan atas.
+        Table turnOrderPanel = buildTurnOrderPanel();
+        turnOrderPanel.pack();
+        turnOrderPanel.setPosition(1280 - turnOrderPanel.getWidth() - 15, 720 - turnOrderPanel.getHeight() - 15);
+        stage.addActor(turnOrderPanel);
+
+        refreshTurnOrderPanel();
+    }
+
+    private Table buildTurnOrderPanel() {
+        Table panel = new Table();
+        panel.pad(8);
+
+        Label header = new Label("TURN ORDER", skin);
+        header.setFontScale(0.9f);
+        panel.add(header).padBottom(6).left().row();
+
+        for (int i = 0; i < TURN_ORDER_PREVIEW_SIZE; i++) {
+            turnOrderLabels[i] = new Label("--", skin);
+            turnOrderLabels[i].setFontScale(0.75f);
+            turnOrderLabels[i].setAlignment(Align.left);
+            panel.add(turnOrderLabels[i]).width(160).left().padBottom(3).row();
+        }
+
+        return panel;
+    }
+
+    private void refreshTurnOrderPanel() {
+        List<Card> upcoming = battleManager.getUpcomingTurnOrder(TURN_ORDER_PREVIEW_SIZE);
+        List<Card> preview = buildNextRoundPreview();
+        int previewIndex = 0;
+
+        for (int i = 0; i < TURN_ORDER_PREVIEW_SIZE; i++) {
+            if (i < upcoming.size()) {
+                Card card = upcoming.get(i);
+                turnOrderLabels[i].setText((i + 1) + ". " + card.getName());
+                Color c = isPlayerCard(card) ? new Color(0.4f, 0.7f, 1f, 1f) : new Color(1f, 0.45f, 0.45f, 1f);
+                turnOrderLabels[i].setColor(c);
+            } else {
+                Card fillerCard = null;
+                while (previewIndex < preview.size()) {
+                    Card candidate = preview.get(previewIndex++);
+                    if (!containsReference(upcoming, candidate)) {
+                        fillerCard = candidate;
+                        break;
+                    }
+                }
+
+                if (fillerCard != null) {
+                    turnOrderLabels[i].setText((i + 1) + ". " + fillerCard.getName());
+                    Color base = isPlayerCard(fillerCard) ? new Color(0.4f, 0.7f, 1f, 1f) : new Color(1f, 0.45f, 0.45f, 1f);
+                    turnOrderLabels[i].setColor(base.r, base.g, base.b, 0.5f);
+                } else {
+                    turnOrderLabels[i].setText("--");
+                    turnOrderLabels[i].setColor(0.4f, 0.4f, 0.4f, 1f);
+                }
+            }
+        }
+    }
+
+    private List<Card> buildNextRoundPreview() {
+        List<Card> alive = new java.util.ArrayList<>();
+
+        for (Card c : battleManager.getPlayerField().getActiveCards()) {
+            if (c != null && !c.isDead()) {
+                alive.add(c);
+            }
+        }
+        for (Card c : battleManager.getEnemyField().getActiveCards()) {
+            if (c != null && !c.isDead()) {
+                alive.add(c);
+            }
+        }
+
+        alive.sort((a, b) -> Integer.compare(b.getSpd(), a.getSpd()));
+        return alive;
+    }
+
+    private boolean containsReference(List<Card> list, Card target) {
+        for (Card c : list) {
+            if (c == target) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private boolean isPlayerCard(Card card) {
+        for (Card ownCard : battleManager.getPlayerField().getActiveCards()) {
+            if (ownCard == card) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private Table buildBattlefieldPanel() {
@@ -259,10 +390,24 @@ public class BattleScreen implements Screen {
         scrollPane.setScrollPercentY(1f);
 
         refreshBattlefieldPanel();
+        refreshTurnOrderPanel();
 
         if (battleManager.isBattleOver()) {
             nextButton.setDisabled(true);
+            rewardButton.setDisabled(false);
             resultLabel.setText(battleManager.isPlayerWin() ? "PLAYER WIN!" : "PLAYER LOSE!");
+        }
+    }
+
+    private String formatSpeedLabel(BattleSpeed speed) {
+        switch (speed) {
+            case FAST:
+                return "2x Fast";
+            case INSTANT:
+                return "Skip (Instant)";
+            case NORMAL:
+            default:
+                return "1x Normal";
         }
     }
 
@@ -276,6 +421,25 @@ public class BattleScreen implements Screen {
     public void render(float delta) {
         Gdx.gl.glClearColor(0f, 0f, 0f, 1f);
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
+
+        if (!battleManager.isBattleOver()) {
+            BattleSpeed speed = game.getBattleSpeed();
+
+            if (speed == BattleSpeed.INSTANT) {
+                while (!battleManager.isBattleOver()) {
+                    stepBattle();
+                }
+            } else {
+                float interval = (speed == BattleSpeed.FAST) ? FAST_INTERVAL : NORMAL_INTERVAL;
+                stepTimer += delta;
+
+                if (stepTimer >= interval) {
+                    stepTimer = 0f;
+                    stepBattle();
+                }
+            }
+        }
+
         stage.act(delta);
         stage.draw();
     }

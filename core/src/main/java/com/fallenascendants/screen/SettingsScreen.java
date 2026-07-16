@@ -2,6 +2,7 @@ package com.fallenascendants.screen;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Screen;
+import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
@@ -24,6 +25,10 @@ public class SettingsScreen implements Screen {
     private Stage stage;
     private Skin skin;
     private Table mainTable;
+
+    private TextButton normalSpeedBtn;
+    private TextButton fastSpeedBtn;
+    private TextButton instantSpeedBtn;
 
     public SettingsScreen(FallenAscendantsGame game) {
         this.game = game;
@@ -77,14 +82,15 @@ public class SettingsScreen implements Screen {
 
         Label speedLabel = new Label("Battle Speed", skin);
 
-        TextButton normalSpeedBtn = new TextButton("1x Normal", skin);
-        TextButton fastSpeedBtn = new TextButton("2x Fast", skin);
-        TextButton instantSpeedBtn = new TextButton("Skip", skin);
+        normalSpeedBtn = new TextButton("1x Normal", skin);
+        fastSpeedBtn = new TextButton("2x Fast", skin);
+        instantSpeedBtn = new TextButton("Skip", skin);
 
         normalSpeedBtn.addListener(new ClickListener() {
             @Override
             public void clicked(InputEvent event, float x, float y) {
                 game.setBattleSpeed(BattleSpeed.NORMAL);
+                refreshSpeedButtonHighlight();
             }
         });
 
@@ -92,6 +98,7 @@ public class SettingsScreen implements Screen {
             @Override
             public void clicked(InputEvent event, float x, float y) {
                 game.setBattleSpeed(BattleSpeed.FAST);
+                refreshSpeedButtonHighlight();
             }
         });
 
@@ -99,6 +106,7 @@ public class SettingsScreen implements Screen {
             @Override
             public void clicked(InputEvent event, float x, float y) {
                 game.setBattleSpeed(BattleSpeed.INSTANT);
+                refreshSpeedButtonHighlight();
             }
         });
 
@@ -128,7 +136,6 @@ public class SettingsScreen implements Screen {
             }
         });
 
-        // Semua penyusunan layout dikumpulkan di sini, urut dari atas ke bawah
         mainTable.add(title).padBottom(30).row();
         mainTable.add(musicLabel).padBottom(5).row();
         mainTable.add(musicSlider).width(400).padBottom(20).row();
@@ -138,6 +145,16 @@ public class SettingsScreen implements Screen {
         mainTable.add(speedRow).padBottom(30).row();
         mainTable.add(resetButton).padBottom(30).row();
         mainTable.add(backButton).padTop(20).row();
+
+        refreshSpeedButtonHighlight();
+    }
+
+    private void refreshSpeedButtonHighlight() {
+        BattleSpeed current = game.getBattleSpeed();
+
+        normalSpeedBtn.setColor(current == BattleSpeed.NORMAL ? Color.GOLD : Color.WHITE);
+        fastSpeedBtn.setColor(current == BattleSpeed.FAST ? Color.GOLD : Color.WHITE);
+        instantSpeedBtn.setColor(current == BattleSpeed.INSTANT ? Color.GOLD : Color.WHITE);
     }
 
     @Override
