@@ -27,6 +27,8 @@ public class CardActor extends Table {
 
     private Cell<Label> lvlCell;
     private Cell<Label> nameCell;
+    private Label lvlLabel;
+    private Label nameLabel;
 
     public CardActor(Card cardData, Skin skin, boolean isOwned, Label.LabelStyle fontStyle, Texture frameTexture) {
         this.cardData = cardData;
@@ -66,8 +68,8 @@ public class CardActor extends Table {
             pixmap.dispose();
         }
 
-        Label lvlLabel = new Label("Lvl." + cardData.getLevel(), fontStyle);
-        Label nameLabel = new Label(cardData.getName(), fontStyle);
+        lvlLabel = new Label("Lvl." + cardData.getLevel(), fontStyle);
+        nameLabel = new Label(cardData.getName(), fontStyle);
         nameLabel.setAlignment(Align.center);
         nameLabel.setWrap(true);
 
@@ -110,6 +112,12 @@ public class CardActor extends Table {
         float insetLeft = w * rarity.getInsetLeft();
         float insetTop = h * rarity.getInsetTop();
         float insetBottom = h * rarity.getInsetBottom();
+
+        if (w > 0) {
+            float fontScale = Math.max(0.5f, Math.min(1.1f, w / 160f));
+            lvlLabel.setFontScale(fontScale);
+            nameLabel.setFontScale(fontScale);
+        }
 
         nameCell.padBottom(insetBottom).padLeft(insetLeft).padRight(insetLeft);
         lvlCell.padLeft(insetLeft + 6).padTop(insetTop + 4);

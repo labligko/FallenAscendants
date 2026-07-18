@@ -1,5 +1,5 @@
 {
-"gold": 420,
+"gold": 1120,
 "collection": [
 	{
 		"cardId": "iron_vanguard",
@@ -15,6 +15,30 @@
 	},
 	{
 		"cardId": "fadeborn_scout",
+		"level": 1
+	},
+	{
+		"cardId": "fallen_wyrm",
+		"level": 1
+	},
+	{
+		"cardId": "void_weaver",
+		"level": 1
+	},
+	{
+		"cardId": "relic_scout",
+		"level": 1
+	},
+	{
+		"cardId": "doom_reader",
+		"level": 1
+	},
+	{
+		"cardId": "thorngate_sentinel",
+		"level": 1
+	},
+	{
+		"cardId": "eclipse",
 		"level": 1
 	}
 ],

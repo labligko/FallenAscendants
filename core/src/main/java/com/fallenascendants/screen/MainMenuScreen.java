@@ -17,6 +17,7 @@ import com.badlogic.gdx.scenes.scene2d.InputListener;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.badlogic.gdx.utils.viewport.FitViewport;
+import com.badlogic.gdx.audio.Music;
 import com.fallenascendants.FallenAscendantsGame;
 
 public class MainMenuScreen implements Screen {
@@ -41,6 +42,8 @@ public class MainMenuScreen implements Screen {
     private TextButton playButton, collectionButton, deckButton, settingsButton, exitButton;
     private float blinkTime = 0;
 
+    private Music lobbyMusic;
+
     public MainMenuScreen(FallenAscendantsGame game) {
         this.game = game;
     }
@@ -49,6 +52,12 @@ public class MainMenuScreen implements Screen {
     public void show() {
         stage = new Stage(new FitViewport(1280, 720));
         Gdx.input.setInputProcessor(stage);
+
+        lobbyMusic = Gdx.audio.newMusic(Gdx.files.internal("sound/background_music/lobby_sound.mp3"));
+
+        lobbyMusic.setLooping(true);
+        lobbyMusic.setVolume(game.getMusicVolume());
+        lobbyMusic.play();
 
         backgroundTexture = new Texture(Gdx.files.internal("background/background_lobby/MainMenuBackgroundFix.png"));
         backgroundTexture.setFilter(Texture.TextureFilter.Linear, Texture.TextureFilter.Linear);
@@ -167,6 +176,7 @@ public class MainMenuScreen implements Screen {
                     Toast.show(stage, "Deck Not Found!.", 1f);
                     return;
                 }
+                lobbyMusic.stop();
 
                 game.setScreen(new PreBattleScreen(game));
             }
@@ -175,6 +185,7 @@ public class MainMenuScreen implements Screen {
         collectionButton.addListener(new ClickListener() {
             @Override
             public void clicked(InputEvent event, float x, float y) {
+                lobbyMusic.stop();
                 game.setScreen(new CollectionScreen(game));
             }
         });
@@ -182,6 +193,7 @@ public class MainMenuScreen implements Screen {
         deckButton.addListener(new ClickListener() {
             @Override
             public void clicked(InputEvent event, float x, float y) {
+                lobbyMusic.stop();
                 game.setScreen(new DeckBuilderScreen(game));
             }
         });
@@ -189,6 +201,7 @@ public class MainMenuScreen implements Screen {
         settingsButton.addListener(new ClickListener() {
             @Override
             public void clicked(InputEvent event, float x, float y) {
+                lobbyMusic.stop();
                 game.setScreen(new SettingsScreen(game));
             }
         });
@@ -197,6 +210,7 @@ public class MainMenuScreen implements Screen {
             @Override
             public void clicked(InputEvent event, float x, float y) {
                 game.saveProgress();
+                lobbyMusic.stop();
                 Gdx.app.exit();
             }
         });
