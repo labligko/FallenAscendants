@@ -30,7 +30,9 @@ if (JavaVersion.current().isJava9Compatible()) {
 
 dependencies {
   implementation "com.badlogicgames.gdx:gdx-backend-lwjgl3:$gdxVersion"
+  implementation "com.badlogicgames.gdx:gdx-lwjgl3-angle:$gdxVersion"
   implementation "com.badlogicgames.gdx:gdx-platform:$gdxVersion:natives-desktop"
+  implementation "com.badlogicgames.gdx:gdx-freetype-platform:$gdxVersion:natives-desktop"
   implementation project(':core')
 
   if(enableGraalNative == 'true') {
@@ -55,6 +57,17 @@ run {
 // You can uncomment the next line if your IDE claims a build failure even when the app closed properly.
   //setIgnoreExitValue(true)
   jvmArgs += "--enable-native-access=ALL-UNNAMED"
+  if (os.contains('mac')) jvmArgs += "-XstartOnFirstThread"
+}
+
+tasks.register('runBattleTester', JavaExec) {
+  group = 'application'
+  description = 'Runs the console BattleTester'
+  classpath = sourceSets.main.runtimeClasspath
+  mainClass = 'com.fallenascendants.debug.BattleTester'
+  standardInput = System.in
+  workingDir = rootProject.file('assets').path
+  jvmArgs += ["-Xmx256m", "-Xms128m", "--enable-native-access=ALL-UNNAMED"]
   if (os.contains('mac')) jvmArgs += "-XstartOnFirstThread"
 }
 

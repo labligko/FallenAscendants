@@ -1,20 +1,48 @@
 package com.fallenascendants.screen;
 
+import com.badlogic.gdx.scenes.scene2d.ui.*;
+import com.fallenascendants.screen.card.CollectionScreen;
+import com.fallenascendants.screen.deck.DeckBuilderScreen;
+
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.Input;
 import com.badlogic.gdx.Screen;
+import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
+import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.graphics.g2d.BitmapFont;
+import com.badlogic.gdx.graphics.g2d.freetype.FreeTypeFontGenerator;
+import com.badlogic.gdx.scenes.scene2d.InputEvent;
+import com.badlogic.gdx.scenes.scene2d.InputListener;
 import com.badlogic.gdx.scenes.scene2d.Stage;
-import com.badlogic.gdx.scenes.scene2d.ui.Label;
-import com.badlogic.gdx.scenes.scene2d.ui.Skin;
-import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
-import com.badlogic.gdx.scenes.scene2d.ui.Table;
-import com.badlogic.gdx.utils.viewport.ScreenViewport;
+import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
+import com.badlogic.gdx.utils.viewport.FitViewport;
+import com.badlogic.gdx.audio.Music;
 import com.fallenascendants.FallenAscendantsGame;
 
 public class MainMenuScreen implements Screen {
     private final FallenAscendantsGame game;
     private Stage stage;
     private Skin skin;
+    private Texture backgroundTexture;
+
+    private BitmapFont titleFont;
+    private BitmapFont buttonFont;
+
+    private Table mainTable;
+    private Table footerTable;
+    private Texture logoTexture;
+    private Image logoImage;
+    private Label blinkLabel;
+
+    private Texture buttonNormal;
+    private Texture buttonHover;
+    private Texture buttonPressed;
+
+    private TextButton playButton, collectionButton, deckButton, settingsButton, exitButton;
+    private float blinkTime = 0;
+
+    private Music lobbyMusic;
 
     public MainMenuScreen(FallenAscendantsGame game) {
         this.game = game;
@@ -22,42 +50,183 @@ public class MainMenuScreen implements Screen {
 
     @Override
     public void show() {
-        stage = new Stage(new ScreenViewport());
+        stage = new Stage(new FitViewport(1280, 720));
         Gdx.input.setInputProcessor(stage);
 
+        lobbyMusic = Gdx.audio.newMusic(Gdx.files.internal("sound/background_music/lobby_sound.mp3"));
+
+        lobbyMusic.setLooping(true);
+        lobbyMusic.setVolume(game.getMusicVolume());
+        lobbyMusic.play();
+
+        backgroundTexture = new Texture(Gdx.files.internal("background/background_lobby/MainMenuBackgroundFix.png"));
+        backgroundTexture.setFilter(Texture.TextureFilter.Linear, Texture.TextureFilter.Linear);
+
+        buttonNormal = new Texture(Gdx.files.internal("Button/PrimaryButton.png"));
+        buttonNormal.setFilter(Texture.TextureFilter.Linear, Texture.TextureFilter.Linear);
+
+        buttonHover = new Texture(Gdx.files.internal("Button/HoverButton.png"));
+        buttonHover.setFilter(Texture.TextureFilter.Linear, Texture.TextureFilter.Linear);
+
+        buttonPressed = new Texture(Gdx.files.internal("Button/PressedButton.png"));
+        buttonPressed.setFilter(Texture.TextureFilter.Linear, Texture.TextureFilter.Linear);
+
+        // AMAN DARI LEAK: Pindahkan inisialisasi awal Logo ke show() satu kali saja
+        logoTexture = new Texture(Gdx.files.internal("Logo/LogoFallenAcsendants.png"));
+        logoTexture.setFilter(Texture.TextureFilter.Linear, Texture.TextureFilter.Linear);
+        logoImage = new Image(logoTexture);
+
+        Image backgroundImage = new Image(backgroundTexture);
+        backgroundImage.setSize(1280, 720);
+        stage.addActor(backgroundImage);
+
         skin = new Skin(Gdx.files.internal("ui/uiskin.json"));
+        FullscreenToggle.attach(stage);
 
-        Table table = new Table();
-        table.setFillParent(true);
-        stage.addActor(table);
+        mainTable = new Table();
+        mainTable.setFillParent(true);
+        stage.addActor(mainTable);
 
-        Label title = new Label("FALLEN ASCENDANTS", skin);
-        Label subtitle = new Label("Auto Battle TCG", skin);
+        footerTable = new Table();
+        footerTable.setFillParent(true);
+        // Naikkan padding bottom footer agar teks panduan F11 tidak terlalu mepet lantai bawah monitor
+        footerTable.bottom().padBottom(25);
+        stage.addActor(footerTable);
+    }
 
-        TextButton playButton = new TextButton("Play", skin);
-        TextButton collectionButton = new TextButton("Collection", skin);
-        TextButton deckButton = new TextButton("Deck Builder", skin);
-        TextButton exitButton = new TextButton("Exit", skin);
+    private void rebuildUI(int width, int height) {
+        if (titleFont != null) titleFont.dispose();
+        if (buttonFont != null) buttonFont.dispose();
 
-        exitButton.addListener(event -> {
-            if (exitButton.isPressed()) {
-                Gdx.app.exit();
+        float scale = (float) height / 720f;
+
+        FreeTypeFontGenerator generator = new FreeTypeFontGenerator(Gdx.files.internal("fonts/CinzelDecorative-Regular.ttf"));
+        FreeTypeFontGenerator.FreeTypeFontParameter parameter = new FreeTypeFontGenerator.FreeTypeFontParameter();
+
+        parameter.size = Math.round(48 * scale);
+        parameter.color = new Color(0.9f, 0.8f, 0.6f, 1f);
+        parameter.borderWidth = 2 * scale;
+        parameter.borderColor = Color.BLACK;
+        titleFont = generator.generateFont(parameter);
+
+        // PROPORSIONAL: Ukuran font tombol dikurangi dari 20 ke 15 agar seimbang di tombol ramping
+        parameter.size = Math.round(15 * scale);
+        parameter.color = Color.WHITE;
+        parameter.borderWidth = 1 * scale;
+        parameter.borderColor = Color.BLACK;
+        buttonFont = generator.generateFont(parameter);
+
+        generator.dispose();
+
+        titleFont.getData().setScale(1f / scale);
+        buttonFont.getData().setScale(1f / scale);
+
+        skin.get("default", Label.LabelStyle.class).font = titleFont;
+        skin.get("default", TextButton.TextButtonStyle.class).font = buttonFont;
+
+        mainTable.clearChildren();
+        footerTable.clearChildren();
+
+        TextButton.TextButtonStyle buttonStyle = new TextButton.TextButtonStyle();
+        buttonStyle.up = new com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable(buttonNormal);
+        buttonStyle.over = new com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable(buttonHover);
+        buttonStyle.down = new com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable(buttonPressed);
+
+        buttonStyle.font = buttonFont;
+        buttonStyle.fontColor = Color.WHITE;
+        buttonStyle.overFontColor = new Color(0.9f, 0.8f, 0.6f, 1f);
+
+        // Pergeseran teks halus saat diklik agar terasa mekanis responsif
+        buttonStyle.pressedOffsetX = 1;
+        buttonStyle.pressedOffsetY = -1;
+
+        playButton = new TextButton("PLAY BATTLE", buttonStyle);
+        collectionButton = new TextButton("CARD ALBUM", buttonStyle);
+        deckButton = new TextButton("DECK BUILDER", buttonStyle);
+        settingsButton = new TextButton("SETTINGS", buttonStyle);
+        exitButton = new TextButton("EXIT GAME", buttonStyle);
+
+        TextButton[] allButtons = { playButton, collectionButton, deckButton, settingsButton, exitButton };
+        for (TextButton btn : allButtons) {
+            btn.getLabelCell().padTop(-1 * scale);
+        }
+
+        // REKAYASA TOTAL STRUKTUR LAYOUT GRID 1280x720
+        // Logo diturunkan ke posisi tengah atas ideal (padTop: 40) dan jarak bottom dinormalisasi (padBottom: -30)
+        mainTable.add(logoImage).size(227, 227).padBottom(0).padTop(40).row();
+
+        // Kalibrasi bumper padBottom disesuaikan presisi agar tidak tumpang tindih ekstrem
+        mainTable.add(playButton).width(216).height(85).padBottom(0).row();
+        mainTable.add(collectionButton).width(216).height(85).padBottom(0).row();
+        mainTable.add(deckButton).width(216).height(85).padBottom(0).row();
+        mainTable.add(settingsButton).width(216).height(85).padBottom(0).row();
+
+        // Tombol terakhir diberi padBottom positif (55) untuk mendorong rangkaian tombol menjauh dari teks F11
+        mainTable.add(exitButton).width(216).height(85).padBottom(50).row();
+
+        Label.LabelStyle footerStyle = new Label.LabelStyle(buttonFont, new Color(0.6f, 0.6f, 0.6f, 1f));
+        blinkLabel = new Label("Press [F11] for Fullscreen", footerStyle);
+        footerTable.add(blinkLabel).padBottom(-10).row();
+
+        // Blok listener aksi klik tombol
+        playButton.addListener(new ClickListener() {
+            @Override
+            public void clicked(InputEvent event, float x, float y) {
+                if (!game.getPlayer().getDeck().isValidForBattle()) {
+                    Toast.show(stage, "Deck Not Found!.", 1f);
+                    return;
+                }
+                lobbyMusic.stop();
+
+                game.setScreen(new PreBattleScreen(game));
             }
-            return true;
         });
 
-        table.add(title).padBottom(20).row();
-        table.add(subtitle).padBottom(40).row();
-        table.add(playButton).width(220).height(50).padBottom(15).row();
-        table.add(collectionButton).width(220).height(50).padBottom(15).row();
-        table.add(deckButton).width(220).height(50).padBottom(15).row();
-        table.add(exitButton).width(220).height(50).row();
+        collectionButton.addListener(new ClickListener() {
+            @Override
+            public void clicked(InputEvent event, float x, float y) {
+                lobbyMusic.stop();
+                game.setScreen(new CollectionScreen(game));
+            }
+        });
+
+        deckButton.addListener(new ClickListener() {
+            @Override
+            public void clicked(InputEvent event, float x, float y) {
+                lobbyMusic.stop();
+                game.setScreen(new DeckBuilderScreen(game));
+            }
+        });
+
+        settingsButton.addListener(new ClickListener() {
+            @Override
+            public void clicked(InputEvent event, float x, float y) {
+                lobbyMusic.stop();
+                game.setScreen(new SettingsScreen(game));
+            }
+        });
+
+        exitButton.addListener(new ClickListener() {
+            @Override
+            public void clicked(InputEvent event, float x, float y) {
+                game.saveProgress();
+                lobbyMusic.stop();
+                Gdx.app.exit();
+            }
+        });
     }
 
     @Override
     public void render(float delta) {
         Gdx.gl.glClearColor(0.08f, 0.06f, 0.10f, 1f);
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
+
+        if (blinkLabel != null) {
+            blinkTime += delta * 4;
+            float alpha = (float) (Math.sin(blinkTime) + 1) / 2f;
+            Color color = blinkLabel.getColor();
+            blinkLabel.setColor(color.r, color.g, color.b, alpha);
+        }
 
         stage.act(delta);
         stage.draw();
@@ -66,6 +235,7 @@ public class MainMenuScreen implements Screen {
     @Override
     public void resize(int width, int height) {
         stage.getViewport().update(width, height, true);
+        rebuildUI(width, height);
     }
 
     @Override public void pause() {}
@@ -76,5 +246,12 @@ public class MainMenuScreen implements Screen {
     public void dispose() {
         stage.dispose();
         skin.dispose();
+        if (backgroundTexture != null) backgroundTexture.dispose();
+        if (titleFont != null) titleFont.dispose();
+        if (buttonFont != null) buttonFont.dispose();
+        if (logoTexture != null) logoTexture.dispose();
+        if (buttonNormal != null) buttonNormal.dispose();
+        if (buttonHover != null) buttonHover.dispose();
+        if (buttonPressed != null) buttonPressed.dispose();
     }
 }
