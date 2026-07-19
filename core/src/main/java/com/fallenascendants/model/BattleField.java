@@ -23,6 +23,7 @@ public class BattleField {
     private void setupFromDeck(Deck deck) {
         for (int i = 0; i < deck.size(); i++) {
             Card card = deck.getCard(i);
+            card.resetForBattle();
 
             if (i < ACTIVE_SLOT_SIZE) {
                 activeCards[i] = card;

@@ -8,7 +8,9 @@ import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Batch;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.InputListener;
+import com.badlogic.gdx.scenes.scene2d.Touchable;
 import com.badlogic.gdx.scenes.scene2d.actions.Actions;
+import com.badlogic.gdx.scenes.scene2d.ui.Cell;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
@@ -16,25 +18,30 @@ import com.badlogic.gdx.utils.Align;
 import com.fallenascendants.model.Card;
 
 public class CardActor extends Table {
+    private static Texture solidPixel;
+
     private final Card cardData;
     private Texture cardTexture;
     private final Texture frameTexture;
     private final boolean isOwned;
-    private com.badlogic.gdx.scenes.scene2d.ui.Cell<Label> nameCell;
+
+    private Cell<Label> lvlCell;
+    private Cell<Label> nameCell;
+    private Label lvlLabel;
+    private Label nameLabel;
 
     public CardActor(Card cardData, Skin skin, boolean isOwned, Label.LabelStyle fontStyle, Texture frameTexture) {
         this.cardData = cardData;
         this.frameTexture = frameTexture;
         this.isOwned = isOwned;
 
-        // Izinkan transformasi agar animasi hover pembesaran (1.05x) tidak patah
         this.setTransform(true);
         this.setOrigin(Align.center);
 
-        // Bersihkan total background table bawaan agar tidak ada gambar duplikat yang meluber
+        this.setTouchable(Touchable.enabled);
+
         this.setBackground((com.badlogic.gdx.scenes.scene2d.utils.Drawable) null);
 
-        // 1. LOGIKA PATH TEKSTUR ILUSTRASI KARTU
         String formattedName = cardData.getName().toLowerCase().replace(" ", "_");
         String factionFolder = "Void Corrupted";
         if (cardData.getFaction() != null) {
@@ -61,23 +68,18 @@ public class CardActor extends Table {
             pixmap.dispose();
         }
 
-        // 2. TATA LETAK TEKS MENU (Tetap menggunakan sistem Table Scene2D terdepan)
-        this.top().pad(14);
-
-        Label lvlLabel = new Label("Lvl." + cardData.getLevel(), fontStyle);
-        Label nameLabel = new Label(cardData.getName(), fontStyle);
+        lvlLabel = new Label("Lvl." + cardData.getLevel(), fontStyle);
+        nameLabel = new Label(cardData.getName(), fontStyle);
         nameLabel.setAlignment(Align.center);
         nameLabel.setWrap(true);
 
-        this.add(lvlLabel).left().row();
-        // PENTING: padBottom TIDAK boleh angka mati (misal 28px), karena tinggi
-        // "plat nama" tiap frame beda-beda (lihat Rarity.getInsetBottom()).
-        // Nilai awal 0 di sini cuma placeholder — nilai asli dihitung di
-        // sizeChanged() begitu actor sudah punya ukuran nyata dari layout.
-        nameCell = this.add(nameLabel).expand().fillX().center();
-        updateNamePadding();
+        lvlCell = this.add(lvlLabel).left();
+        this.row();
+        this.add().expandY().row();
+        nameCell = this.add(nameLabel).expandX().fillX().center();
 
-        // 3. TEMPLATE HOVER & SISTEM KURSOR POINTER
+        updateLayout();
+
         this.addListener(new InputListener() {
             @Override
             public void enter(InputEvent event, float x, float y, int pointer, com.badlogic.gdx.scenes.scene2d.Actor fromActor) {
@@ -95,46 +97,60 @@ public class CardActor extends Table {
         });
     }
 
-    // Dipanggil otomatis oleh Scene2D setiap kali width/height actor berubah
-    // (misal saat pertama kali di-layout oleh grid/parent). getHeight() di
-    // constructor masih 0, jadi padding baru valid dihitung di sini.
     @Override
     protected void sizeChanged() {
         super.sizeChanged();
-        updateNamePadding();
+        updateLayout();
     }
 
-    private void updateNamePadding() {
-        if (nameCell == null) return;
-        float namePadBottom = getHeight() * cardData.getRarity().getInsetBottom() * 0.55f;
-        nameCell.padBottom(namePadBottom);
+    private void updateLayout() {
+        if (nameCell == null || lvlCell == null) return;
+
+        float h = getHeight();
+        float w = getWidth();
+        com.fallenascendants.enumtype.Rarity rarity = cardData.getRarity();
+        float insetLeft = w * rarity.getInsetLeft();
+        float insetTop = h * rarity.getInsetTop();
+        float insetBottom = h * rarity.getInsetBottom();
+
+        if (w > 0) {
+            float fontScale = Math.max(0.5f, Math.min(1.1f, w / 160f));
+            lvlLabel.setFontScale(fontScale);
+            nameLabel.setFontScale(fontScale);
+        }
+
+        nameCell.padBottom(insetBottom).padLeft(insetLeft).padRight(insetLeft);
+        lvlCell.padLeft(insetLeft + 6).padTop(insetTop + 4);
+
         invalidate();
     }
 
-    // 4. KUNCI UTAMA: CUSTOM DRAW UNTUK PRESISI GAMBAR VS FRAME
+    private static Texture getSolidPixel() {
+        if (solidPixel == null) {
+            Pixmap pixmap = new Pixmap(1, 1, Pixmap.Format.RGBA8888);
+            pixmap.setColor(1f, 1f, 1f, 1f);
+            pixmap.fill();
+            solidPixel = new Texture(pixmap);
+            pixmap.dispose();
+        }
+        return solidPixel;
+    }
+
     @Override
     public void draw(Batch batch, float parentAlpha) {
-        // PENTING: pasang transform (scale hover) SEBELUM menggambar apa pun,
-        // supaya art, frame, DAN teks semua ikut membesar bersamaan saat di-hover.
-        // Sebelumnya applyTransform baru terjadi di dalam super.draw(), jadi
-        // art+frame yang digambar manual di sini tidak ikut ter-scale.
+        this.validate();
+
         boolean usesTransform = isTransform();
         if (usesTransform) applyTransform(batch, computeTransform());
 
-        // Simpan warna batch asli agar tidak merusak elemen UI lain di screen
         Color oldColor = batch.getColor();
 
-        // Tentukan warna render berdasarkan status kepemilikan (Redup total jika tidak punya)
         Color targetColor = isOwned ? Color.WHITE : new Color(0.2f, 0.2f, 0.2f, 1f);
         batch.setColor(targetColor.r, targetColor.g, targetColor.b, targetColor.a * parentAlpha);
 
-        // Karena transform sudah dipasang, gambar digambar relatif ke (0,0) lokal, bukan getX()/getY() global
         float w = getWidth();
         float h = getHeight();
 
-        // LANGKAH A: Gambar Ilustrasi Monster di Lapisan Bawah
-        // Inset dihitung berdasarkan PERSENTASE ukuran kartu, bukan piksel tetap,
-        // dan diambil dari Rarity karena tiap frame punya ukuran lubang window yang berbeda.
         com.fallenascendants.enumtype.Rarity rarity = cardData.getRarity();
         float insetLeft   = w * rarity.getInsetLeft();
         float insetRight  = w * rarity.getInsetRight();
@@ -147,15 +163,31 @@ public class CardActor extends Table {
             w - insetLeft - insetRight,
             h - insetTop - insetBottom);
 
-        // LANGKAH B: Gambar Bingkai Kelangkaan di Lapisan Atas (Menimpa Gambar)
-        // Frame ditarik full 100% mengisi batas terluar sel (160x240)
+        batch.setColor(0f, 0f, 0f, 0.6f * parentAlpha);
+
+        float platePad = 4f;
+
+        if (nameCell.getActorHeight() > 0) {
+            batch.draw(getSolidPixel(),
+                insetLeft,
+                nameCell.getActorY() - platePad,
+                w - insetLeft - insetRight,
+                nameCell.getActorHeight() + platePad * 2);
+        }
+
+        if (lvlCell.getActorHeight() > 0) {
+            batch.draw(getSolidPixel(),
+                lvlCell.getActorX() - platePad,
+                lvlCell.getActorY() - platePad,
+                lvlCell.getActorWidth() + platePad * 2,
+                lvlCell.getActorHeight() + platePad * 2);
+        }
+
+        batch.setColor(targetColor.r, targetColor.g, targetColor.b, targetColor.a * parentAlpha);
         batch.draw(frameTexture, 0, 0, w, h);
 
-        // Kembalikan warna batch ke semula sebelum menggambar teks bawaan
         batch.setColor(oldColor);
 
-        // LANGKAH C: Render Teks Lvl & Nama Kartu paling depan (children saja, bukan super.draw()
-        // penuh, karena applyTransform sudah kita pasang manual di atas)
         drawChildren(batch, parentAlpha);
 
         if (usesTransform) resetTransform(batch);
