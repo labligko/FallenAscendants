@@ -1,5 +1,5 @@
 {
-"gold": 1120,
+"gold": 1800,
 "collection": [
 	{
 		"cardId": "iron_vanguard",
@@ -39,6 +39,26 @@
 	},
 	{
 		"cardId": "eclipse",
+		"level": 1
+	},
+	{
+		"cardId": "iron_vanguard",
+		"level": 1
+	},
+	{
+		"cardId": "ember_drake",
+		"level": 1
+	},
+	{
+		"cardId": "sanctified_archer",
+		"level": 1
+	},
+	{
+		"cardId": "relic_scout",
+		"level": 1
+	},
+	{
+		"cardId": "relic_scout",
 		"level": 1
 	}
 ],

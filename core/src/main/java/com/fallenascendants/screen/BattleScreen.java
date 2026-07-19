@@ -1,27 +1,33 @@
 package com.fallenascendants.screen;
 
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.Input;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
+import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.graphics.g2d.BitmapFont;
+import com.badlogic.gdx.graphics.g2d.freetype.FreeTypeFontGenerator;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.Stage;
-import com.badlogic.gdx.scenes.scene2d.ui.Label;
-import com.badlogic.gdx.scenes.scene2d.ui.ScrollPane;
-import com.badlogic.gdx.scenes.scene2d.ui.Skin;
-import com.badlogic.gdx.scenes.scene2d.ui.Table;
-import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
+import com.badlogic.gdx.scenes.scene2d.ui.*;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.badlogic.gdx.utils.Align;
 import com.badlogic.gdx.utils.viewport.FitViewport;
+import com.badlogic.gdx.graphics.Pixmap;
+import com.badlogic.gdx.scenes.scene2d.actions.Actions;
+import com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable;
 import com.fallenascendants.FallenAscendantsGame;
+import com.fallenascendants.audio.MusicManager;
 import com.fallenascendants.battle.BattleManager;
 import com.fallenascendants.battle.FactionCounterGraph;
 import com.fallenascendants.enumtype.BattleSpeed;
 import com.fallenascendants.enumtype.Faction;
+import com.fallenascendants.enumtype.Rarity;
 import com.fallenascendants.model.Card;
 import com.fallenascendants.model.ProgressionManager;
 import com.fallenascendants.model.StatusEffect;
+import com.fallenascendants.screen.card.CardActor;
 
 import java.util.List;
 
@@ -32,19 +38,33 @@ public class BattleScreen implements Screen {
     private Stage stage;
     private Skin skin;
 
-    private final StringBuilder fullLog = new StringBuilder();
-    private Label logLabel;
-    private ScrollPane scrollPane;
-    private Label resultLabel;
+    private Texture solidPixel;
+    private com.badlogic.gdx.scenes.scene2d.ui.Container<Label> announcePanel;
+    private Label announceLabel;
     private Label speedLabel;
-    private TextButton nextButton;
-    private TextButton rewardButton;
 
-    private final Label[] enemySlotLabels = new Label[5];
-    private final Label[] playerSlotLabels = new Label[5];
+    // Font & frame, dipola sama kayak PreBattleScreen biar konsisten
+    private BitmapFont titleFont;
+    private BitmapFont uiFont;
+    private Label.LabelStyle cardLabelStyle;
+    private Label.LabelStyle goldTitleStyle;
+    private Texture commonFrame, rareFrame, epicFrame, legendaryFrame, specialFrame;
+    private Texture backFrameCardTexture;
+    private final java.util.Map<Card, CardActor> cardActorCache = new java.util.HashMap<>();
 
-    private final Label[] enemyReserveLabels = new Label[3];
-    private final Label[] playerReserveLabels = new Label[3];
+    private static final int ACTIVE_CARD_WIDTH = 92;
+    private static final int ACTIVE_CARD_HEIGHT = 132;
+    private static final int SIDE_CARD_WIDTH = 46;
+    private static final int SIDE_CARD_HEIGHT = 66;
+
+    private final Table[] enemyActiveSlots = new Table[5];
+    private final Table[] playerActiveSlots = new Table[5];
+    private Table enemyActiveRow;
+    private Table playerActiveRow;
+    private Table enemyGraveyardColumn;
+    private Table enemyReserveColumn;
+    private Table playerGraveyardColumn;
+    private Table playerReserveColumn;
 
     private Label enemySummaryLabel;
     private Label playerSummaryLabel;
@@ -55,6 +75,7 @@ public class BattleScreen implements Screen {
     private static final float NORMAL_INTERVAL = 1.2f;
     private static final float FAST_INTERVAL = 0.5f;
     private float stepTimer = 0f;
+    private boolean resultDialogShown = false;
 
     public BattleScreen(FallenAscendantsGame game, BattleManager battleManager) {
         this.game = game;
@@ -65,84 +86,92 @@ public class BattleScreen implements Screen {
     public void show() {
         stage = new Stage(new FitViewport(1280, 720));
         Gdx.input.setInputProcessor(stage);
+        Gdx.input.setCatchKey(com.badlogic.gdx.Input.Keys.BACK, true);
+        Gdx.input.setCatchKey(com.badlogic.gdx.Input.Keys.ESCAPE, true);
         skin = new Skin(Gdx.files.internal("ui/uiskin.json"));
+        MusicManager.play("sound/background_music/battle_sound.mp3", true);
 
         FullscreenToggle.attach(stage);
+
+        FreeTypeFontGenerator generator = new FreeTypeFontGenerator(Gdx.files.internal("fonts/CinzelDecorative-Regular.ttf"));
+        FreeTypeFontGenerator.FreeTypeFontParameter parameter = new FreeTypeFontGenerator.FreeTypeFontParameter();
+
+        parameter.size = 24;
+        parameter.color = new Color(0.9f, 0.8f, 0.6f, 1f);
+        parameter.borderWidth = 2;
+        parameter.borderColor = Color.BLACK;
+        titleFont = generator.generateFont(parameter);
+
+        parameter.size = 12;
+        parameter.color = Color.WHITE;
+        parameter.borderWidth = 1;
+        parameter.borderColor = Color.BLACK;
+        uiFont = generator.generateFont(parameter);
+        generator.dispose();
+
+        cardLabelStyle = new Label.LabelStyle(uiFont, Color.WHITE);
+        goldTitleStyle = new Label.LabelStyle(titleFont, new Color(0.9f, 0.8f, 0.6f, 1f));
+
+        commonFrame = new Texture(Gdx.files.internal("card_frames/commonFrame.png"));
+        rareFrame = new Texture(Gdx.files.internal("card_frames/rareFrame.png"));
+        epicFrame = new Texture(Gdx.files.internal("card_frames/epicFrame.png"));
+        legendaryFrame = new Texture(Gdx.files.internal("card_frames/legendaryFrame.png"));
+        specialFrame = new Texture(Gdx.files.internal("card_frames/specialFrame.png"));
+        backFrameCardTexture = new Texture(Gdx.files.internal("card_frames/backFrameCard.png"));
+        backFrameCardTexture.setFilter(Texture.TextureFilter.Linear, Texture.TextureFilter.Linear);
 
         Table root = new Table();
         root.setFillParent(true);
         root.top().pad(20);
         stage.addActor(root);
 
+        TextButton backButton = new TextButton("← Back", skin);
+        backButton.setPosition(20, 680);
+
+        backButton.addListener(new ClickListener() {
+            @Override
+            public void clicked(InputEvent event, float x, float y) {
+                showPauseDialog();
+            }
+        });
+
+        stage.addActor(backButton);
+
+        Table enemyRow = buildBattlefieldRow(false);
+        Table playerRow = buildBattlefieldRow(true);
+        root.add(enemyRow).padBottom(10).row();
+        root.add(playerRow).padBottom(15).row();
+
         Label title = new Label("BATTLE LOG", skin);
         title.setFontScale(1.5f);
         root.add(title).padBottom(10).row();
 
-        Table battlefieldPanel = buildBattlefieldPanel();
-        root.add(battlefieldPanel).padBottom(15).row();
+        // Passive/synergy tetep dijalanin (efeknya nempel ke kartu), cuma teksnya udah gak
+        // ditampilin lagi di sini — battle log sekarang jadi banner popup per-aksi.
+        battleManager.applyPassiveSkillsAtBattleStart();
+        battleManager.applyFactionSynergyAtBattleStart();
 
-        appendLog(battleManager.applyPassiveSkillsAtBattleStart());
-        appendLog(battleManager.applyFactionSynergyAtBattleStart());
+        Pixmap pixmap = new Pixmap(1, 1, Pixmap.Format.RGBA8888);
+        pixmap.setColor(1f, 1f, 1f, 1f);
+        pixmap.fill();
+        solidPixel = new Texture(pixmap);
+        pixmap.dispose();
 
-        FactionCounterGraph factionCounterGraph = new FactionCounterGraph();
-        appendLog(factionCounterGraph.getCounterReport());
-        appendLog(factionCounterGraph.getDepthFirstTraversalReport(Faction.CELESTIAL_REMNANTS));
+        announceLabel = new Label("", cardLabelStyle);
+        announceLabel.setFontScale(1f);
+        announceLabel.setWrap(true);
+        announceLabel.setAlignment(Align.center);
 
-        appendLog(battleManager.getTurnQueueReport());
+        announcePanel = new com.badlogic.gdx.scenes.scene2d.ui.Container<>(announceLabel);
+        announcePanel.pad(10);
+        announcePanel.fill();
+        announcePanel.width(700);
+        announcePanel.setBackground(new TextureRegionDrawable(solidPixel).tint(new Color(0f, 0f, 0f, 0.7f)));
+        announcePanel.getColor().a = 0f;
 
-        logLabel = new Label(fullLog.toString(), skin);
-        logLabel.setWrap(true);
-        logLabel.setAlignment(Align.topLeft);
-
-        scrollPane = new ScrollPane(logLabel, skin);
-        scrollPane.setFadeScrollBars(false);
-        root.add(scrollPane).width(1100).height(320).padBottom(15).row();
-
-        resultLabel = new Label("", skin);
-        resultLabel.setFontScale(1.3f);
-        root.add(resultLabel).padBottom(10).row();
-
-        speedLabel = new Label("Speed: " + formatSpeedLabel(game.getBattleSpeed()), skin);
-        speedLabel.setFontScale(0.95f);
-        speedLabel.setColor(0.75f, 0.75f, 0.75f, 1f);
-        root.add(speedLabel).padBottom(10).row();
+        root.add(announcePanel).width(700).padBottom(15).row();
 
         Table buttonRow = new Table();
-
-        nextButton = new TextButton("Next Action", skin);
-        nextButton.addListener(new ClickListener() {
-            @Override
-            public void clicked(InputEvent event, float x, float y) {
-                stepTimer = 0f;
-                stepBattle();
-            }
-        });
-
-        TextButton backButton = new TextButton("Back to Menu (Forfeit)", skin);
-        backButton.addListener(new ClickListener() {
-            @Override
-            public void clicked(InputEvent event, float x, float y) {
-                game.setScreen(new MainMenuScreen(game));
-            }
-        });
-
-        rewardButton = new TextButton("Claim Rewards", skin);
-        rewardButton.setDisabled(true);
-        rewardButton.addListener(new ClickListener() {
-            @Override
-            public void clicked(InputEvent event, float x, float y) {
-                if (rewardButton.isDisabled()) {
-                    return;
-                }
-                ProgressionManager.BattleRewards rewards =
-                    ProgressionManager.processBattleRewards(game.getPlayer(), battleManager.isPlayerWin());
-                game.setScreen(new RewardScreen(game, rewards));
-            }
-        });
-
-        buttonRow.add(nextButton).width(200).padRight(20);
-        buttonRow.add(rewardButton).width(200).padRight(20);
-        buttonRow.add(backButton).width(220);
         root.add(buttonRow);
 
         // Isi panel status dengan kondisi awal (sebelum aksi pertama jalan)
@@ -155,7 +184,53 @@ public class BattleScreen implements Screen {
         turnOrderPanel.setPosition(1280 - turnOrderPanel.getWidth() - 15, 720 - turnOrderPanel.getHeight() - 15);
         stage.addActor(turnOrderPanel);
 
+
+        refreshSpeedLabel();
         refreshTurnOrderPanel();
+    }
+
+    private Dialog pauseDialog;
+    private boolean paused = false;
+    private void showPauseDialog() {
+
+        // Kalau sudah pause -> tutup dialog
+        if (paused) {
+            paused = false;
+            MusicManager.resume();
+
+            if (pauseDialog != null) {
+                pauseDialog.hide();
+            }
+
+            return;
+        }
+
+        // Kalau belum pause -> buka dialog
+        paused = true;
+        MusicManager.pause();
+
+        pauseDialog = new Dialog("Paused", skin) {
+
+            @Override
+            protected void result(Object object) {
+
+                boolean continueGame = (Boolean) object;
+
+                if (continueGame) {
+                    paused = false;
+                    MusicManager.resume();
+                } else {
+                    MusicManager.stop();
+                    game.setScreen(new MainMenuScreen(game));
+                }
+            }
+        };
+
+        pauseDialog.text("Battle is paused.");
+        pauseDialog.button("Continue", true);
+        pauseDialog.button("Main Menu", false);
+
+        pauseDialog.show(stage);
     }
 
     private Table buildTurnOrderPanel() {
@@ -173,7 +248,22 @@ public class BattleScreen implements Screen {
             panel.add(turnOrderLabels[i]).width(160).left().padBottom(3).row();
         }
 
+        panel.row();
+
+        speedLabel = new Label("", skin);
+        speedLabel.setFontScale(0.75f);
+
+        panel.add(speedLabel)
+            .padTop(8)
+            .left();
+
         return panel;
+    }
+
+    private void refreshSpeedLabel() {
+        if (speedLabel == null) return;
+
+        speedLabel.setText("Speed : " + formatSpeedLabel(game.getBattleSpeed()));
     }
 
     private void refreshTurnOrderPanel() {
@@ -245,66 +335,65 @@ public class BattleScreen implements Screen {
         return false;
     }
 
-    private Table buildBattlefieldPanel() {
-        Table panel = new Table();
+    private Table buildBattlefieldRow(boolean isPlayerSide) {
+        Table row = new Table();
 
-        Label enemyHeader = new Label("ENEMY", skin);
-        enemyHeader.setFontScale(1.1f);
-        panel.add(enemyHeader).colspan(5).padBottom(6).row();
+        Label header = new Label(isPlayerSide ? "YOUR TEAM" : "ENEMY", goldTitleStyle);
+        header.setFontScale(0.8f);
+        row.add(header).colspan(3).padBottom(6).row();
 
-        Table enemyRow = new Table();
+        Table graveyardColumn = buildSideColumn("GRAVE");
+        Table activeRow = new Table();
+        Table reserveColumn = buildSideColumn("RESERVE");
+
         for (int i = 0; i < 5; i++) {
-            enemySlotLabels[i] = new Label("", skin);
-            enemySlotLabels[i].setFontScale(1f);
-            enemySlotLabels[i].setAlignment(Align.center);
-            enemyRow.add(enemySlotLabels[i]).width(210).pad(4);
+            Table slot = new Table();
+            activeRow.add(slot).pad(3);
+            if (isPlayerSide) {
+                playerActiveSlots[i] = slot;
+            } else {
+                enemyActiveSlots[i] = slot;
+            }
         }
-        panel.add(enemyRow).padBottom(4).row();
 
-        Table enemyReserveRow = new Table();
-        for (int i = 0; i < 3; i++) {
-            enemyReserveLabels[i] = new Label("", skin);
-            enemyReserveLabels[i].setFontScale(0.8f);
-            enemyReserveLabels[i].setAlignment(Align.center);
-            enemyReserveLabels[i].setColor(0.55f, 0.55f, 0.55f, 1f);
-            enemyReserveRow.add(enemyReserveLabels[i]).width(210).pad(4);
+        if (isPlayerSide) {
+            row.add(graveyardColumn).width(70).top().padRight(8);
+            row.add(activeRow).top();
+            row.add(reserveColumn).width(70).top().padLeft(8);
+            playerGraveyardColumn = graveyardColumn;
+            playerReserveColumn = reserveColumn;
+            playerActiveRow = activeRow;
+        } else {
+            row.add(reserveColumn).width(70).top().padRight(8);
+            row.add(activeRow).top();
+            row.add(graveyardColumn).width(70).top().padLeft(8);
+            enemyReserveColumn = reserveColumn;
+            enemyGraveyardColumn = graveyardColumn;
+            enemyActiveRow = activeRow;
         }
-        panel.add(enemyReserveRow).padBottom(4).row();
+        row.row();
 
-        enemySummaryLabel = new Label("", skin);
-        enemySummaryLabel.setFontScale(0.85f);
-        enemySummaryLabel.setColor(0.7f, 0.7f, 0.7f, 1f);
-        panel.add(enemySummaryLabel).colspan(5).padBottom(16).row();
+        Label summaryLabel = new Label("", cardLabelStyle);
+        summaryLabel.setFontScale(0.75f);
+        summaryLabel.setColor(0.7f, 0.7f, 0.7f, 1f);
+        row.add(summaryLabel).colspan(3).padTop(4);
 
-        Label playerHeader = new Label("YOUR TEAM", skin);
-        playerHeader.setFontScale(1.1f);
-        panel.add(playerHeader).colspan(5).padBottom(6).row();
-
-        Table playerRow = new Table();
-        for (int i = 0; i < 5; i++) {
-            playerSlotLabels[i] = new Label("", skin);
-            playerSlotLabels[i].setFontScale(1f);
-            playerSlotLabels[i].setAlignment(Align.center);
-            playerRow.add(playerSlotLabels[i]).width(210).pad(4);
+        if (isPlayerSide) {
+            playerSummaryLabel = summaryLabel;
+        } else {
+            enemySummaryLabel = summaryLabel;
         }
-        panel.add(playerRow).padBottom(4).row();
 
-        Table playerReserveRow = new Table();
-        for (int i = 0; i < 3; i++) {
-            playerReserveLabels[i] = new Label("", skin);
-            playerReserveLabels[i].setFontScale(0.8f);
-            playerReserveLabels[i].setAlignment(Align.center);
-            playerReserveLabels[i].setColor(0.55f, 0.55f, 0.55f, 1f);
-            playerReserveRow.add(playerReserveLabels[i]).width(210).pad(4);
-        }
-        panel.add(playerReserveRow).padBottom(4).row();
+        return row;
+    }
 
-        playerSummaryLabel = new Label("", skin);
-        playerSummaryLabel.setFontScale(0.85f);
-        playerSummaryLabel.setColor(0.7f, 0.7f, 0.7f, 1f);
-        panel.add(playerSummaryLabel).colspan(5).row();
-
-        return panel;
+    private Table buildSideColumn(String headerText) {
+        Table column = new Table();
+        Label header = new Label(headerText, cardLabelStyle);
+        header.setFontScale(0.7f);
+        header.setColor(0.65f, 0.65f, 0.65f, 1f);
+        column.add(header).padBottom(4).row();
+        return column;
     }
 
     private void refreshBattlefieldPanel() {
@@ -312,28 +401,125 @@ public class BattleScreen implements Screen {
         Card[] playerActive = battleManager.getPlayerField().getActiveCards();
 
         for (int i = 0; i < 5; i++) {
-            applySlot(enemySlotLabels[i], enemyActive[i], false);
-            applySlot(playerSlotLabels[i], playerActive[i], false);
+            fillActiveSlot(enemyActiveSlots[i], enemyActive[i]);
+            fillActiveSlot(playerActiveSlots[i], playerActive[i]);
         }
 
-        List<Card> enemyReserve = battleManager.getEnemyField().getReserveCards();
-        List<Card> playerReserve = battleManager.getPlayerField().getReserveCards();
-
-        for (int i = 0; i < 3; i++) {
-            Card enemyCard = i < enemyReserve.size() ? enemyReserve.get(i) : null;
-            Card playerCard = i < playerReserve.size() ? playerReserve.get(i) : null;
-            applySlot(enemyReserveLabels[i], enemyCard, true);
-            applySlot(playerReserveLabels[i], playerCard, true);
-        }
+        fillSideColumn(enemyReserveColumn, battleManager.getEnemyField().getReserveCards(), "RESERVE");
+        fillSideColumn(enemyGraveyardColumn, battleManager.getEnemyField().getGraveyard(), "GRAVE");
+        fillSideColumn(playerReserveColumn, battleManager.getPlayerField().getReserveCards(), "RESERVE");
+        fillSideColumn(playerGraveyardColumn, battleManager.getPlayerField().getGraveyard(), "GRAVE");
 
         enemySummaryLabel.setText(
-            "Reserve: " + battleManager.getEnemyField().getReserveCards().size() + " card(s)  |  "
-                + "Graveyard: " + battleManager.getEnemyField().getGraveyard().size() + " card(s)"
+            "Reserve: " + battleManager.getEnemyField().getReserveCards().size() + "  |  "
+                + "Graveyard: " + battleManager.getEnemyField().getGraveyard().size()
         );
         playerSummaryLabel.setText(
-            "Reserve: " + battleManager.getPlayerField().getReserveCards().size() + " card(s)  |  "
-                + "Graveyard: " + battleManager.getPlayerField().getGraveyard().size() + " card(s)"
+            "Reserve: " + battleManager.getPlayerField().getReserveCards().size() + "  |  "
+                + "Graveyard: " + battleManager.getPlayerField().getGraveyard().size()
         );
+    }
+
+    private CardActor getOrCreateCardActor(Card card) {
+        CardActor cached = cardActorCache.get(card);
+        if (cached == null) {
+            Texture frame = getFrameByRarity(card.getRarity());
+            cached = new CardActor(card, skin, true, cardLabelStyle, frame);
+            cardActorCache.put(card, cached);
+        }
+        return cached;
+    }
+
+    private void fillActiveSlot(Table slot, Card card) {
+        slot.clear();
+
+        if (card == null) {
+            Label empty = new Label("--", cardLabelStyle);
+            empty.setFontScale(0.8f);
+            empty.setColor(0.4f, 0.4f, 0.4f, 1f);
+            slot.add(empty).size(ACTIVE_CARD_WIDTH, ACTIVE_CARD_HEIGHT);
+            return;
+        }
+
+        CardActor cardActor = getOrCreateCardActor(card);
+        cardActor.getColor().set(card.isDead() ? new Color(0.4f, 0.4f, 0.4f, 1f) : Color.WHITE);
+
+        Label hpLabel = new Label(
+            card.isDead() ? "[DEFEATED]" : card.getCurrentHp() + "/" + card.getMaxHp()
+                                           + (card.getShield() > 0 ? " (+" + card.getShield() + ")" : ""),
+            cardLabelStyle
+        );
+        hpLabel.setFontScale(0.72f);
+        hpLabel.setAlignment(Align.center);
+        hpLabel.setColor(card.isDead() ? new Color(0.6f, 0.3f, 0.3f, 1f) : Color.WHITE);
+
+        slot.add(cardActor).size(ACTIVE_CARD_WIDTH, ACTIVE_CARD_HEIGHT).row();
+        slot.add(hpLabel).padTop(2);
+    }
+
+    private static final int MAX_STACK_VISIBLE = 4;
+
+    private void fillSideColumn(Table column, List<Card> cards, String headerText) {
+        column.clear();
+
+        boolean isReserve = "RESERVE".equals(headerText);
+
+        Label header = new Label(headerText, cardLabelStyle);
+        header.setFontScale(0.7f);
+        header.setColor(0.65f, 0.65f, 0.65f, 1f);
+        column.add(header).padBottom(4).row();
+
+        if (cards.isEmpty()) {
+            Label empty = new Label("--", cardLabelStyle);
+            empty.setFontScale(0.7f);
+            empty.setColor(0.4f, 0.4f, 0.4f, 1f);
+            column.add(empty);
+            return;
+        }
+
+        int total = cards.size();
+        List<Card> visibleCards = total > MAX_STACK_VISIBLE
+            ? cards.subList(total - MAX_STACK_VISIBLE, total)
+            : cards;
+
+        int overlapPeek = 18;
+        for (int i = 0; i < visibleCards.size(); i++) {
+            Card card = visibleCards.get(i);
+            float topPad = (i == 0) ? 0f : -(SIDE_CARD_HEIGHT - overlapPeek);
+
+            if (isReserve) {
+                com.badlogic.gdx.scenes.scene2d.ui.Image cardImage =
+                    new com.badlogic.gdx.scenes.scene2d.ui.Image(backFrameCardTexture);
+                column.add(cardImage).size(SIDE_CARD_WIDTH, SIDE_CARD_HEIGHT).padTop(topPad).row();
+            } else {
+                CardActor cachedActor = getOrCreateCardActor(card);
+                cachedActor.getColor().a = 0.55f;
+                column.add(cachedActor).size(SIDE_CARD_WIDTH, SIDE_CARD_HEIGHT).padTop(topPad).row();
+            }
+        }
+
+        if (total > MAX_STACK_VISIBLE) {
+            Label moreLabel = new Label("+" + (total - MAX_STACK_VISIBLE) + " more", cardLabelStyle);
+            moreLabel.setFontScale(0.6f);
+            moreLabel.setColor(0.6f, 0.6f, 0.6f, 1f);
+            column.add(moreLabel).padTop(6).row();
+        }
+    }
+
+    private Texture getFrameByRarity(Rarity rarity) {
+        if (rarity == null) {
+            return commonFrame;
+        }
+        switch (rarity) {
+            case RARE:
+                return rareFrame;
+            case EPIC:
+                return epicFrame;
+            case LEGENDARY:
+                return legendaryFrame;
+            default:
+                return commonFrame;
+        }
     }
 
     private void applySlot(Label label, Card card, boolean isReserve) {
@@ -379,24 +565,64 @@ public class BattleScreen implements Screen {
         return sb.toString();
     }
 
+    private void resolveRemainingActionsInstantly() {
+        while (!battleManager.isBattleOver()) {
+            battleManager.processSingleAction();
+        }
+
+        refreshBattlefieldPanel();
+        refreshTurnOrderPanel();
+
+        if (!resultDialogShown) {
+            resultDialogShown = true;
+            showBattleResultDialog();
+        }
+    }
+
     private void stepBattle() {
         if (battleManager.isBattleOver()) {
             return;
         }
 
-        appendLog(battleManager.processSingleAction());
-        logLabel.setText(fullLog.toString());
-        scrollPane.layout();
-        scrollPane.setScrollPercentY(1f);
+        announce(battleManager.processSingleAction());
 
         refreshBattlefieldPanel();
         refreshTurnOrderPanel();
 
-        if (battleManager.isBattleOver()) {
-            nextButton.setDisabled(true);
-            rewardButton.setDisabled(false);
-            resultLabel.setText(battleManager.isPlayerWin() ? "PLAYER WIN!" : "PLAYER LOSE!");
+        if (battleManager.isBattleOver() && !resultDialogShown) {
+            resultDialogShown = true;
+            showBattleResultDialog();
         }
+    }
+
+    private void showBattleResultDialog() {
+
+        MusicManager.stop();
+        if (battleManager.isPlayerWin()) {
+            MusicManager.play("sound/background_music/victory_sound.mp3", false);
+        } else {
+            MusicManager.play("sound/background_music/defeat_sound.mp3", false);
+        }
+
+        String title = battleManager.isPlayerWin() ? "VICTORY" : "DEFEAT";
+
+        String message = battleManager.isPlayerWin() ? "You have defeated the enemy." : "Your team has fallen.";
+
+        com.badlogic.gdx.scenes.scene2d.ui.Dialog dialog =
+            new com.badlogic.gdx.scenes.scene2d.ui.Dialog(title, skin){
+                @Override
+                protected void result(Object object){
+                    ProgressionManager.BattleRewards rewards =
+                        ProgressionManager.processBattleRewards(game.getPlayer(), battleManager.isPlayerWin());
+                    game.setScreen(new RewardScreen(game, rewards));
+                }
+            };
+
+        dialog.text(message);
+        dialog.button("Continue");
+        dialog.key(Input.Keys.ENTER, true);
+
+        dialog.show(stage);
     }
 
     private String formatSpeedLabel(BattleSpeed speed) {
@@ -411,24 +637,34 @@ public class BattleScreen implements Screen {
         }
     }
 
-    private void appendLog(String text) {
-        if (text != null && !text.isBlank()) {
-            fullLog.append(text).append("\n\n");
+    private void announce(String text) {
+        if (text == null || text.isBlank() || announceLabel == null) {
+            return;
         }
+        announceLabel.setText(text);
+        announcePanel.clearActions();
+        announcePanel.getColor().a = 0f;
+        announcePanel.addAction(Actions.sequence(
+            Actions.fadeIn(0.15f),
+            Actions.delay(1.0f),
+            Actions.fadeOut(0.5f)
+        ));
     }
 
     @Override
     public void render(float delta) {
+        if (Gdx.input.isKeyJustPressed(Input.Keys.ESCAPE)) {
+            showPauseDialog();
+        }
+
         Gdx.gl.glClearColor(0f, 0f, 0f, 1f);
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
 
-        if (!battleManager.isBattleOver()) {
+        if (!paused && !battleManager.isBattleOver()) {
             BattleSpeed speed = game.getBattleSpeed();
 
             if (speed == BattleSpeed.INSTANT) {
-                while (!battleManager.isBattleOver()) {
-                    stepBattle();
-                }
+                resolveRemainingActionsInstantly();
             } else {
                 float interval = (speed == BattleSpeed.FAST) ? FAST_INTERVAL : NORMAL_INTERVAL;
                 stepTimer += delta;
@@ -451,11 +687,23 @@ public class BattleScreen implements Screen {
 
     @Override public void pause() {}
     @Override public void resume() {}
-    @Override public void hide() {}
+    @Override
+    public void hide() {
+        MusicManager.stop();
+    }
 
     @Override
     public void dispose() {
         stage.dispose();
         skin.dispose();
+        if (titleFont != null) titleFont.dispose();
+        if (uiFont != null) uiFont.dispose();
+        if (commonFrame != null) commonFrame.dispose();
+        if (rareFrame != null) rareFrame.dispose();
+        if (epicFrame != null) epicFrame.dispose();
+        if (legendaryFrame != null) legendaryFrame.dispose();
+        if (specialFrame != null) specialFrame.dispose();
+        if (backFrameCardTexture != null) backFrameCardTexture.dispose();
+        if (solidPixel != null) solidPixel.dispose();
     }
 }
