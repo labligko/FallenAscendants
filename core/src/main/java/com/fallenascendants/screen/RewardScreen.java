@@ -1,6 +1,7 @@
 package com.fallenascendants.screen;
 
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.Input;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
@@ -12,6 +13,7 @@ import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.badlogic.gdx.utils.viewport.FitViewport;
 import com.fallenascendants.FallenAscendantsGame;
+import com.fallenascendants.audio.MusicManager;
 import com.fallenascendants.model.Card;
 import com.fallenascendants.model.ProgressionManager;
 
@@ -26,6 +28,7 @@ public class RewardScreen implements Screen {
 
     private Label revealLabel;
     private TextButton[] cardOptionButtons;
+    private boolean rewardClaimed = false;
 
     public RewardScreen(FallenAscendantsGame game, ProgressionManager.BattleRewards rewards) {
         this.game = game;
@@ -74,7 +77,13 @@ public class RewardScreen implements Screen {
                     public void clicked(InputEvent event, float x, float y) {
                         Card claimed = ProgressionManager.claimCardReward(game.getPlayer(), rewards, optionIndex);
                         if (claimed != null) {
-                            revealLabel.setText("Anda mendapatkan: " + claimed.getName() + " (" + claimed.getRarity() + ")!");
+                            rewardClaimed = true;
+
+                            revealLabel.setText(
+                                "Anda mendapatkan: " + claimed.getName() +
+                                    " (" + claimed.getRarity() + ")!"
+                            );
+
                             for (TextButton btn : cardOptionButtons) {
                                 btn.setDisabled(true);
                             }
@@ -104,10 +113,23 @@ public class RewardScreen implements Screen {
             }
         });
         root.add(continueButton).width(200);
+
+        if (rewards.isWin()) {
+            MusicManager.play("sound/background_music/victory_theme.mp3", true);
+        } else {
+            MusicManager.play("sound/background_music/defeat_theme.mp3", true);
+        }
     }
 
     @Override
     public void render(float delta) {
+        if (Gdx.input.isKeyJustPressed(Input.Keys.ENTER)
+            || Gdx.input.isKeyJustPressed(Input.Keys.NUMPAD_ENTER)) {
+            if (!rewards.isWin() || rewardClaimed) {
+                game.saveProgress();
+                game.setScreen(new MainMenuScreen(game));
+            }
+        }
         Gdx.gl.glClearColor(0.05f, 0.04f, 0.07f, 1f);
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
         stage.act(delta);
@@ -121,7 +143,10 @@ public class RewardScreen implements Screen {
 
     @Override public void pause() {}
     @Override public void resume() {}
-    @Override public void hide() {}
+    @Override
+    public void hide() {
+        MusicManager.stop();
+    }
 
     @Override
     public void dispose() {
