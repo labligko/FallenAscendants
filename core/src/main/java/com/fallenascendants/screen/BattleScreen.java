@@ -8,7 +8,9 @@ import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.freetype.FreeTypeFontGenerator;
+import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
+import com.badlogic.gdx.scenes.scene2d.InputListener;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.*;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
@@ -76,6 +78,9 @@ public class BattleScreen implements Screen {
     private static final float FAST_INTERVAL = 0.5f;
     private float stepTimer = 0f;
     private boolean resultDialogShown = false;
+
+    private final Card[] enemyDisplayed = new Card[5];
+    private final Card[] playerDisplayed = new Card[5];
 
     public BattleScreen(FallenAscendantsGame game, BattleManager battleManager) {
         this.game = game;
@@ -401,8 +406,15 @@ public class BattleScreen implements Screen {
         Card[] playerActive = battleManager.getPlayerField().getActiveCards();
 
         for (int i = 0; i < 5; i++) {
-            fillActiveSlot(enemyActiveSlots[i], enemyActive[i]);
-            fillActiveSlot(playerActiveSlots[i], playerActive[i]);
+            if (enemyDisplayed[i] != enemyActive[i]) {
+                enemyDisplayed[i] = enemyActive[i];
+                fillActiveSlot(enemyActiveSlots[i], enemyActive[i]);
+            }
+
+            if (playerDisplayed[i] != playerActive[i]) {
+                playerDisplayed[i] = playerActive[i];
+                fillActiveSlot(playerActiveSlots[i], playerActive[i]);
+            }
         }
 
         fillSideColumn(enemyReserveColumn, battleManager.getEnemyField().getReserveCards(), "RESERVE");
@@ -425,6 +437,26 @@ public class BattleScreen implements Screen {
         if (cached == null) {
             Texture frame = getFrameByRarity(card.getRarity());
             cached = new CardActor(card, skin, true, cardLabelStyle, frame);
+
+            final CardActor actorRef = cached;
+            cached.addListener(new com.badlogic.gdx.scenes.scene2d.InputListener() {
+                @Override
+                public boolean touchDown(InputEvent event, float x, float y, int pointer, int button) {
+
+                    if(button == Input.Buttons.RIGHT){
+
+                        if(statsTooltip == null){
+                            showStatsTooltip(actorRef, card);
+                        }else{
+                            hideStatsTooltip();
+                        }
+
+                        return true;
+                    }
+
+                    return false;
+                }
+            });
             cardActorCache.put(card, cached);
         }
         return cached;
@@ -441,6 +473,7 @@ public class BattleScreen implements Screen {
             return;
         }
 
+        cardActorCache.remove(card);
         CardActor cardActor = getOrCreateCardActor(card);
         cardActor.getColor().set(card.isDead() ? new Color(0.4f, 0.4f, 0.4f, 1f) : Color.WHITE);
 
@@ -492,7 +525,8 @@ public class BattleScreen implements Screen {
                     new com.badlogic.gdx.scenes.scene2d.ui.Image(backFrameCardTexture);
                 column.add(cardImage).size(SIDE_CARD_WIDTH, SIDE_CARD_HEIGHT).padTop(topPad).row();
             } else {
-                CardActor cachedActor = getOrCreateCardActor(card);
+                Texture frame = getFrameByRarity(card.getRarity());
+                CardActor cachedActor = new CardActor(card, skin, true, cardLabelStyle, frame);
                 cachedActor.getColor().a = 0.55f;
                 column.add(cachedActor).size(SIDE_CARD_WIDTH, SIDE_CARD_HEIGHT).padTop(topPad).row();
             }
@@ -651,6 +685,51 @@ public class BattleScreen implements Screen {
         ));
     }
 
+    private Table statsTooltip;
+    private void showStatsTooltip(Actor sourceActor, Card card) {
+        hideStatsTooltip();
+
+        String activeSkillName = card.getActiveSkill() == null ? "None" : card.getActiveSkill().getName();
+        boolean isBuffed = card.getAtk() != card.getBaseAtk() || card.getDef() != card.getBaseDef();
+
+        String statsText = card.getName() + "\n"
+            + card.getRole() + " | " + card.getRarity() + " | Lvl " + card.getLevel() + "\n"
+            + "ATK: " + card.getAtk() + (isBuffed ? " (base " + card.getBaseAtk() + ")" : "") + "\n"
+            + "DEF: " + card.getDef() + (isBuffed ? " (base " + card.getBaseDef() + ")" : "") + "\n"
+            + "SPD: " + card.getSpd() + "   Aggro: " + card.getAggro() + "\n"
+            + "HP: " + card.getCurrentHp() + "/" + card.getMaxHp()
+            + (card.getShield() > 0 ? "  Shield: " + card.getShield() : "") + "\n"
+            + "Skill: " + activeSkillName;
+
+        Label statsLabel = new Label(statsText, cardLabelStyle);
+        statsLabel.setFontScale(0.85f);
+        statsLabel.setWrap(true);
+
+        com.badlogic.gdx.scenes.scene2d.ui.Container<Label> content = new com.badlogic.gdx.scenes.scene2d.ui.Container<>(statsLabel);
+        content.pad(10);
+        content.fill();
+        content.width(260);
+        content.setBackground(new TextureRegionDrawable(solidPixel).tint(new Color(0f, 0f, 0f, 0.88f)));
+
+        statsTooltip = new Table();
+        statsTooltip.add(content);
+        statsTooltip.pack();
+
+        com.badlogic.gdx.math.Vector2 pos = sourceActor.localToStageCoordinates(new com.badlogic.gdx.math.Vector2(0, 0));
+        float clampedX = Math.max(10f, Math.min(pos.x, 1280 - statsTooltip.getWidth() - 10));
+        float clampedY = Math.max(10f, Math.min(pos.y + sourceActor.getHeight() + 10, 720 - statsTooltip.getHeight() - 10));
+
+        statsTooltip.setPosition(clampedX, clampedY);
+        stage.addActor(statsTooltip);
+    }
+
+    private void hideStatsTooltip() {
+        if (statsTooltip != null) {
+            statsTooltip.remove();
+            statsTooltip = null;
+        }
+    }
+
     @Override
     public void render(float delta) {
         if (Gdx.input.isKeyJustPressed(Input.Keys.ESCAPE)) {
@@ -705,5 +784,10 @@ public class BattleScreen implements Screen {
         if (specialFrame != null) specialFrame.dispose();
         if (backFrameCardTexture != null) backFrameCardTexture.dispose();
         if (solidPixel != null) solidPixel.dispose();
+
+        for (CardActor actor : cardActorCache.values()) {
+            actor.dispose();
+        }
+        cardActorCache.clear();
     }
 }

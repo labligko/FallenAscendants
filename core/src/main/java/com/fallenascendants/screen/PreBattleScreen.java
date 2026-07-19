@@ -57,6 +57,8 @@ public class PreBattleScreen implements Screen {
     private float blinkTime = 0f;
     private Table activeTooltip;
 
+    private final java.util.List<CardActor> createdCardActors = new java.util.ArrayList<>();
+
     public PreBattleScreen(FallenAscendantsGame game) {
         this.game = game;
     }
@@ -200,6 +202,7 @@ public class PreBattleScreen implements Screen {
     private CardActor buildCardTile(Card card, boolean isPlayerSide, int width, int height) {
         Texture frame = getFrameByRarity(card.getRarity());
         CardActor cardActor = new CardActor(card, skin, true, cardLabelStyle, frame);
+        createdCardActors.add(cardActor);
 
         cardActor.addListener(new InputListener() {
             @Override
@@ -310,5 +313,10 @@ public class PreBattleScreen implements Screen {
         if (epicFrame != null) epicFrame.dispose();
         if (legendaryFrame != null) legendaryFrame.dispose();
         if (specialFrame != null) specialFrame.dispose();
+
+        for (CardActor actor : createdCardActors) {
+            actor.dispose();
+        }
+        createdCardActors.clear();
     }
 }

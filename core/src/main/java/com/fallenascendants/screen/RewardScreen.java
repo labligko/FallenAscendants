@@ -29,6 +29,7 @@ public class RewardScreen implements Screen {
     private Label revealLabel;
     private TextButton[] cardOptionButtons;
     private boolean rewardClaimed = false;
+    private TextButton continueButton;
 
     public RewardScreen(FallenAscendantsGame game, ProgressionManager.BattleRewards rewards) {
         this.game = game;
@@ -46,6 +47,8 @@ public class RewardScreen implements Screen {
         Table root = new Table();
         root.setFillParent(true);
         stage.addActor(root);
+
+        continueButton = new TextButton("Continue", skin);
 
         Label title = new Label(rewards.isWin() ? "VICTORY!" : "DEFEAT", skin);
         title.setFontScale(2f);
@@ -78,6 +81,7 @@ public class RewardScreen implements Screen {
                         Card claimed = ProgressionManager.claimCardReward(game.getPlayer(), rewards, optionIndex);
                         if (claimed != null) {
                             rewardClaimed = true;
+                            continueButton.setDisabled(false);
 
                             revealLabel.setText(
                                 "Anda mendapatkan: " + claimed.getName() +
@@ -104,10 +108,12 @@ public class RewardScreen implements Screen {
             root.add(loseLabel).padBottom(30).row();
         }
 
-        TextButton continueButton = new TextButton("Continue", skin);
+        if (rewards.isWin()) {continueButton.setDisabled(true);}
         continueButton.addListener(new ClickListener() {
             @Override
             public void clicked(InputEvent event, float x, float y) {
+                if (rewards.isWin() && !rewardClaimed) {return;}
+
                 game.saveProgress();
                 game.setScreen(new MainMenuScreen(game));
             }

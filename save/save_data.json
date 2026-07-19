@@ -1,5 +1,5 @@
 {
-"gold": 1800,
+"gold": 2200,
 "collection": [
 	{
 		"cardId": "iron_vanguard",
@@ -60,7 +60,12 @@
 	{
 		"cardId": "relic_scout",
 		"level": 1
+	},
+	{
+		"cardId": "voidborn_hulk",
+		"level": 1
 	}
 ],
-"battleSpeed": "INSTANT"
+"musicVolume": 0.48999998,
+"battleSpeed": "FAST"
 }
