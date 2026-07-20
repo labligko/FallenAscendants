@@ -1,5 +1,5 @@
 {
-"gold": 2200,
+"gold": 3260,
 "collection": [
 	{
 		"cardId": "iron_vanguard",
@@ -63,6 +63,46 @@
 	},
 	{
 		"cardId": "voidborn_hulk",
+		"level": 1
+	},
+	{
+		"cardId": "hollow_grunt",
+		"level": 1
+	},
+	{
+		"cardId": "the_last_congregation",
+		"level": 1
+	},
+	{
+		"cardId": "ironscale_guardian",
+		"level": 1
+	},
+	{
+		"cardId": "shadow_initiate",
+		"level": 1
+	},
+	{
+		"cardId": "vagrant_blade",
+		"level": 1
+	},
+	{
+		"cardId": "flame_wyrm",
+		"level": 1
+	},
+	{
+		"cardId": "unseen_sovereign",
+		"level": 1
+	},
+	{
+		"cardId": "iron_vanguard",
+		"level": 1
+	},
+	{
+		"cardId": "ashveil_acolyte",
+		"level": 1
+	},
+	{
+		"cardId": "fallen_wyrm",
 		"level": 1
 	}
 ],
