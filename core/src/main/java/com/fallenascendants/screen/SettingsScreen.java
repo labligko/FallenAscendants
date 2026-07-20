@@ -70,6 +70,7 @@ public class SettingsScreen implements Screen {
             @Override
             public void changed(ChangeEvent event, Actor actor) {
                 game.setMusicVolume(musicSlider.getValue());
+                com.fallenascendants.audio.MusicManager.setVolume(musicSlider.getValue());
             }
         });
 

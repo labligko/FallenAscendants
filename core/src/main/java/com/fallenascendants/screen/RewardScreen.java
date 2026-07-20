@@ -121,9 +121,9 @@ public class RewardScreen implements Screen {
         root.add(continueButton).width(200);
 
         if (rewards.isWin()) {
-            MusicManager.play("sound/background_music/victory_theme.mp3", true);
+            MusicManager.play("sound/background_music/victory_theme.mp3", true, game.getMusicVolume());
         } else {
-            MusicManager.play("sound/background_music/defeat_theme.mp3", true);
+            MusicManager.play("sound/background_music/defeat_theme.mp3", true, game.getMusicVolume());
         }
     }
 

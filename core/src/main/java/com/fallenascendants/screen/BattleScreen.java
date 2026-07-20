@@ -52,7 +52,7 @@ public class BattleScreen implements Screen {
     private Label.LabelStyle goldTitleStyle;
     private Texture commonFrame, rareFrame, epicFrame, legendaryFrame, specialFrame;
     private Texture backFrameCardTexture;
-    private final java.util.Map<Card, CardActor> cardActorCache = new java.util.HashMap<>();
+    private final java.util.Map<Card, CardActor> cardActorCache = new java.util.IdentityHashMap<>();
 
     private static final int ACTIVE_CARD_WIDTH = 92;
     private static final int ACTIVE_CARD_HEIGHT = 132;
@@ -94,7 +94,7 @@ public class BattleScreen implements Screen {
         Gdx.input.setCatchKey(com.badlogic.gdx.Input.Keys.BACK, true);
         Gdx.input.setCatchKey(com.badlogic.gdx.Input.Keys.ESCAPE, true);
         skin = new Skin(Gdx.files.internal("ui/uiskin.json"));
-        MusicManager.play("sound/background_music/battle_sound.mp3", true);
+        MusicManager.play("sound/background_music/battle_sound.mp3", true, game.getMusicVolume());
 
         FullscreenToggle.attach(stage);
 
@@ -444,6 +444,9 @@ public class BattleScreen implements Screen {
                 public boolean touchDown(InputEvent event, float x, float y, int pointer, int button) {
 
                     if(button == Input.Buttons.RIGHT){
+                        if (card.isDead()) {
+                            return false;
+                        }
 
                         if(statsTooltip == null){
                             showStatsTooltip(actorRef, card);
@@ -473,8 +476,9 @@ public class BattleScreen implements Screen {
             return;
         }
 
-        cardActorCache.remove(card);
         CardActor cardActor = getOrCreateCardActor(card);
+        cardActor.clearActions();
+        cardActor.setPosition(0, 0);
         cardActor.getColor().set(card.isDead() ? new Color(0.4f, 0.4f, 0.4f, 1f) : Color.WHITE);
 
         Label hpLabel = new Label(
@@ -525,8 +529,9 @@ public class BattleScreen implements Screen {
                     new com.badlogic.gdx.scenes.scene2d.ui.Image(backFrameCardTexture);
                 column.add(cardImage).size(SIDE_CARD_WIDTH, SIDE_CARD_HEIGHT).padTop(topPad).row();
             } else {
-                Texture frame = getFrameByRarity(card.getRarity());
-                CardActor cachedActor = new CardActor(card, skin, true, cardLabelStyle, frame);
+                CardActor cachedActor = getOrCreateCardActor(card);
+                cachedActor.clearActions();
+                cachedActor.setPosition(0, 0);
                 cachedActor.getColor().a = 0.55f;
                 column.add(cachedActor).size(SIDE_CARD_WIDTH, SIDE_CARD_HEIGHT).padTop(topPad).row();
             }
@@ -618,10 +623,39 @@ public class BattleScreen implements Screen {
             return;
         }
 
-        announce(battleManager.processSingleAction());
+        java.util.Map<Card, int[]> hpShieldBefore = captureHpShieldSnapshot();
+
+        String log = battleManager.processSingleAction();
+
+        Card animAttacker = battleManager.wasLastActionBasicAttack() ? battleManager.getLastAttacker() : null;
+        Card animTarget = battleManager.wasLastActionBasicAttack() ? battleManager.getLastTarget() : null;
+        CardActor attackerActor = (animAttacker != null) ? cardActorCache.get(animAttacker) : null;
+        CardActor targetActor = (animTarget != null) ? cardActorCache.get(animTarget) : null;
+
+        com.badlogic.gdx.math.Vector2 attackerPos = null;
+        com.badlogic.gdx.math.Vector2 targetPos = null;
+        if (attackerActor != null && targetActor != null) {
+            attackerPos = attackerActor.localToStageCoordinates(
+                new com.badlogic.gdx.math.Vector2(attackerActor.getWidth() / 2f, attackerActor.getHeight() / 2f));
+            targetPos = targetActor.localToStageCoordinates(
+                new com.badlogic.gdx.math.Vector2(targetActor.getWidth() / 2f, targetActor.getHeight() / 2f));
+        }
+
+        announce(log);
 
         refreshBattlefieldPanel();
         refreshTurnOrderPanel();
+
+        showFloatingNumbers(hpShieldBefore);
+
+        boolean canAnimate = attackerPos != null && targetPos != null
+            && attackerActor.getStage() != null
+            && animAttacker != null && !animAttacker.isDead()
+            && animTarget != null && !animTarget.isDead();
+
+        if (canAnimate) {
+            playLungeAnimation(attackerActor, targetActor, attackerPos, targetPos);
+        }
 
         if (battleManager.isBattleOver() && !resultDialogShown) {
             resultDialogShown = true;
@@ -629,13 +663,108 @@ public class BattleScreen implements Screen {
         }
     }
 
+    private void playLungeAnimation(CardActor attackerActor, CardActor targetActor,
+                                    com.badlogic.gdx.math.Vector2 attackerPos, com.badlogic.gdx.math.Vector2 targetPos) {
+        float dx = (targetPos.x - attackerPos.x) * 0.7f;
+        float dy = (targetPos.y - attackerPos.y) * 0.7f;
+
+        attackerActor.clearActions();
+        attackerActor.addAction(Actions.sequence(
+            Actions.moveBy(dx, dy, 0.20f, com.badlogic.gdx.math.Interpolation.pow2Out),
+            Actions.delay(0.08f), // jeda "impact", biar kerasa nubruk beneran, bukan langsung mental balik
+            Actions.moveBy(-dx, -dy, 0.18f, com.badlogic.gdx.math.Interpolation.pow2In)
+        ));
+
+        // Target kena shake + flash merah, ngasih feedback kalau dia beneran kena hit.
+        // Delay 0.20f biar shake-nya kejadian PAS attacker nyampe (nyusul durasi moveBy di atas).
+        targetActor.clearActions();
+        targetActor.addAction(Actions.sequence(
+            Actions.delay(0.20f),
+            Actions.parallel(
+                Actions.sequence(
+                    Actions.moveBy(6, 0, 0.03f),
+                    Actions.moveBy(-12, 0, 0.05f),
+                    Actions.moveBy(6, 0, 0.03f)
+                ),
+                Actions.sequence(
+                    Actions.color(Color.RED, 0.05f),
+                    Actions.color(Color.WHITE, 0.12f)
+                )
+            )
+        ));
+    }
+
+    private java.util.Map<Card, int[]> captureHpShieldSnapshot() {
+        java.util.Map<Card, int[]> snapshot = new java.util.IdentityHashMap<>();
+        for (Card c : battleManager.getPlayerField().getActiveCards()) {
+            if (c != null) {
+                snapshot.put(c, new int[]{c.getCurrentHp(), c.getShield()});
+            }
+        }
+        for (Card c : battleManager.getEnemyField().getActiveCards()) {
+            if (c != null) {
+                snapshot.put(c, new int[]{c.getCurrentHp(), c.getShield()});
+            }
+        }
+        return snapshot;
+    }
+
+    private void showFloatingNumbers(java.util.Map<Card, int[]> before) {
+        for (java.util.Map.Entry<Card, int[]> entry : before.entrySet()) {
+            Card card = entry.getKey();
+            int hpDelta = card.getCurrentHp() - entry.getValue()[0];
+            int shieldDelta = card.getShield() - entry.getValue()[1];
+
+            if (hpDelta == 0 && shieldDelta == 0) {
+                continue;
+            }
+
+            CardActor actor = cardActorCache.get(card);
+            if (actor == null || actor.getStage() == null) {
+                continue;
+            }
+
+            String text;
+            Color color;
+            if (hpDelta != 0) {
+                text = (hpDelta > 0 ? "+" : "") + hpDelta;
+                color = hpDelta > 0 ? new Color(0.4f, 1f, 0.4f, 1f) : new Color(1f, 0.35f, 0.35f, 1f);
+            } else {
+                text = (shieldDelta > 0 ? "+" : "") + shieldDelta + " Shield";
+                color = new Color(0.5f, 0.75f, 1f, 1f);
+            }
+
+            spawnFloatingNumber(actor, text, color);
+        }
+    }
+
+    private void spawnFloatingNumber(CardActor sourceActor, String text, Color color) {
+        Label numberLabel = new Label(text, cardLabelStyle);
+        numberLabel.setColor(color);
+        numberLabel.setFontScale(1.1f);
+
+        com.badlogic.gdx.math.Vector2 pos = sourceActor.localToStageCoordinates(
+            new com.badlogic.gdx.math.Vector2(sourceActor.getWidth() / 2f, sourceActor.getHeight()));
+
+        numberLabel.setPosition(pos.x - 15, pos.y);
+        stage.addActor(numberLabel);
+
+        numberLabel.addAction(Actions.sequence(
+            Actions.parallel(
+                Actions.moveBy(0, 30, 0.8f, com.badlogic.gdx.math.Interpolation.pow2Out),
+                Actions.sequence(Actions.delay(0.3f), Actions.fadeOut(0.5f))
+            ),
+            Actions.removeActor()
+        ));
+    }
+
     private void showBattleResultDialog() {
 
         MusicManager.stop();
         if (battleManager.isPlayerWin()) {
-            MusicManager.play("sound/background_music/victory_sound.mp3", false);
+            MusicManager.play("sound/background_music/victory_sound.mp3", true, game.getMusicVolume());
         } else {
-            MusicManager.play("sound/background_music/defeat_sound.mp3", false);
+            MusicManager.play("sound/background_music/defeat_sound.mp3", true, game.getMusicVolume());
         }
 
         String title = battleManager.isPlayerWin() ? "VICTORY" : "DEFEAT";
