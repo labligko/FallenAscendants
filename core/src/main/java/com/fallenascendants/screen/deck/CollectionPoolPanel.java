@@ -81,7 +81,8 @@ public class CollectionPoolPanel extends Table {
         this.add(panelTitle).left().padBottom(15).row();
 
         Table gridTable = new Table();
-        List<Card> allCards = CardDatabase.getAllCards();
+//        List<Card> allCards = CardDatabase.getAllCards();
+        List<Card> allCards = player.getCollection();
 
         int startIndex = currentPage * CARDS_PER_PAGE;
         int endIndex = Math.min(startIndex + CARDS_PER_PAGE, allCards.size());

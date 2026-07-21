@@ -226,7 +226,13 @@ public class CollectionScreen implements Screen {
 
         for (int i = startIndex; i < endIndex; i++) {
             final Card card = allCards.get(i);
-            boolean isOwned = (i % 3 != 0);
+            boolean isOwned = false;
+            for (Card playerCard : player.getCollection()) {
+                if (playerCard.getId().equals(card.getId())) {
+                    isOwned = true;
+                    break; // Kalau ketemu, berarti player punya kartu ini
+                }
+            }
             final boolean finalIsOwned = isOwned;
 
             String rarityStr = "common";

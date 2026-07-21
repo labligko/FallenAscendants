@@ -25,6 +25,7 @@ import com.badlogic.gdx.utils.viewport.FitViewport;
 import com.badlogic.gdx.math.Interpolation;
 import com.fallenascendants.FallenAscendantsGame;
 import com.fallenascendants.audio.MusicManager;
+import com.fallenascendants.audio.SFXManager;
 import com.fallenascendants.enumtype.Rarity;
 import com.fallenascendants.model.Card;
 import com.fallenascendants.model.ProgressionManager;
@@ -54,9 +55,6 @@ public class RewardScreen implements Screen {
     private Label.LabelStyle titleLabelStyle;
     private Label.LabelStyle bodyLabelStyle;
 
-    // Objek Sound untuk efek flip kartu
-    private Sound flipSound;
-
     private final List<CardActor> createdCardActors = new ArrayList<>();
 
     private Label revealLabel;
@@ -77,9 +75,6 @@ public class RewardScreen implements Screen {
         skin = new Skin(Gdx.files.internal("ui/uiskin.json"));
 
         FullscreenToggle.attach(stage);
-
-        // Memuat file audio flip kartu
-        flipSound = Gdx.audio.newSound(Gdx.files.internal("sound/sound_effect/flip.mp3"));
 
         String backgroundPath = rewards.isWin()
             ? "background/background_lobby/WinBackground.png"
@@ -258,9 +253,7 @@ public class RewardScreen implements Screen {
             Actions.scaleTo(0f, 1f, 0.15f, Interpolation.pow2In),
             Actions.run(() -> {
                 // Mainkan sound effect persis ketika kartu di tengah animasi balik (skala X = 0)
-                if (flipSound != null) {
-                    flipSound.play();
-                }
+                SFXManager.play("sound/sound_effect/flip.mp3");
                 container.setActor(revealedCardActor);
             }),
             Actions.scaleTo(1f, 1f, 0.15f, Interpolation.pow2Out)
@@ -326,9 +319,6 @@ public class RewardScreen implements Screen {
         if (buttonPressed != null) buttonPressed.dispose();
         if (titleFont != null) titleFont.dispose();
         if (uiFont != null) uiFont.dispose();
-
-        // Membersihkan objek audio dari memory
-        if (flipSound != null) flipSound.dispose();
 
         for (CardActor actor : createdCardActors) {
             actor.dispose();

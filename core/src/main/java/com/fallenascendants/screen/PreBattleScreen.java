@@ -49,6 +49,7 @@ public class PreBattleScreen implements Screen {
 
     private Texture commonFrame, rareFrame, epicFrame, legendaryFrame, specialFrame;
     private Texture solidPixel;
+    private Texture tooltipPanelTexture;
 
     private Deck playerDeck;
     private Deck enemyDeck;
@@ -83,8 +84,20 @@ public class PreBattleScreen implements Screen {
         solidPixel = new Texture(pixmap);
         pixmap.dispose();
 
+        Image fogOverlay = new Image(solidPixel);
+        fogOverlay.setSize(1280, 720);
+
+        fogOverlay.setColor(0f, 0f, 0f, 0.55f);
+        stage.addActor(fogOverlay);
+
+        tooltipPanelTexture = new Texture(Gdx.files.internal("Panel/LargePanel.png"));
+        tooltipPanelTexture.setFilter(Texture.TextureFilter.Linear, Texture.TextureFilter.Linear);
+
         FreeTypeFontGenerator generator = new FreeTypeFontGenerator(Gdx.files.internal("fonts/CinzelDecorative-Regular.ttf"));
         FreeTypeFontGenerator.FreeTypeFontParameter parameter = new FreeTypeFontGenerator.FreeTypeFontParameter();
+
+        parameter.minFilter = Texture.TextureFilter.Linear;
+        parameter.magFilter = Texture.TextureFilter.Linear;
 
         parameter.size = 28;
         parameter.color = new Color(0.9f, 0.8f, 0.6f, 1f);
@@ -232,15 +245,14 @@ public class PreBattleScreen implements Screen {
         Label statsLabel = new Label(statsText, cardLabelStyle);
         statsLabel.setFontScale(0.85f);
         statsLabel.setWrap(true);
-
-        Container<Label> content = new Container<>(statsLabel);
-        content.pad(10);
-        content.fill();
-        content.width(240);
-        content.setBackground(new TextureRegionDrawable(solidPixel).tint(new Color(0f, 0f, 0f, 0.85f)));
+        statsLabel.setAlignment(Align.left);
 
         activeTooltip = new Table();
-        activeTooltip.add(content);
+        TextureRegionDrawable panelBg = new TextureRegionDrawable(tooltipPanelTexture);
+        panelBg.setMinWidth(0);
+        panelBg.setMinHeight(0);
+        activeTooltip.setBackground(panelBg);
+        activeTooltip.add(statsLabel).width(230).padLeft(55).padRight(40).padTop(35).padBottom(30);
         activeTooltip.pack();
 
         Vector2 cardPos = cardActor.localToStageCoordinates(new Vector2(0, 0));
@@ -313,6 +325,8 @@ public class PreBattleScreen implements Screen {
         if (epicFrame != null) epicFrame.dispose();
         if (legendaryFrame != null) legendaryFrame.dispose();
         if (specialFrame != null) specialFrame.dispose();
+
+        if (tooltipPanelTexture != null) tooltipPanelTexture.dispose();
 
         for (CardActor actor : createdCardActors) {
             actor.dispose();
