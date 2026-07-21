@@ -22,6 +22,7 @@ import com.fallenascendants.FallenAscendantsGame;
 import com.fallenascendants.data.CardDatabase;
 import com.fallenascendants.model.Card;
 import com.fallenascendants.model.Player;
+import com.fallenascendants.screen.FullscreenToggle;
 import com.fallenascendants.screen.MainMenuScreen;
 
 import java.util.List;
@@ -62,6 +63,7 @@ public class CollectionScreen implements Screen {
         stage = new Stage(new FitViewport(1280, 720));
         Gdx.input.setInputProcessor(stage);
         skin = new Skin(Gdx.files.internal("ui/uiskin.json"));
+        FullscreenToggle.attach(stage);
 
         // Menggunakan Player yang sama dengan seluruh game (gold & collection persist antar screen)
         player = game.getPlayer();

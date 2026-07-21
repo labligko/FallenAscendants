@@ -1,1 +1,111 @@
-{}
+{
+"gold": 3260,
+"collection": [
+	{
+		"cardId": "iron_vanguard",
+		"level": 1
+	},
+	{
+		"cardId": "scalebinder",
+		"level": 1
+	},
+	{
+		"cardId": "eclipse",
+		"level": 1
+	},
+	{
+		"cardId": "fadeborn_scout",
+		"level": 1
+	},
+	{
+		"cardId": "fallen_wyrm",
+		"level": 1
+	},
+	{
+		"cardId": "void_weaver",
+		"level": 1
+	},
+	{
+		"cardId": "relic_scout",
+		"level": 1
+	},
+	{
+		"cardId": "doom_reader",
+		"level": 1
+	},
+	{
+		"cardId": "thorngate_sentinel",
+		"level": 1
+	},
+	{
+		"cardId": "eclipse",
+		"level": 1
+	},
+	{
+		"cardId": "iron_vanguard",
+		"level": 1
+	},
+	{
+		"cardId": "ember_drake",
+		"level": 1
+	},
+	{
+		"cardId": "sanctified_archer",
+		"level": 1
+	},
+	{
+		"cardId": "relic_scout",
+		"level": 1
+	},
+	{
+		"cardId": "relic_scout",
+		"level": 1
+	},
+	{
+		"cardId": "voidborn_hulk",
+		"level": 1
+	},
+	{
+		"cardId": "hollow_grunt",
+		"level": 1
+	},
+	{
+		"cardId": "the_last_congregation",
+		"level": 1
+	},
+	{
+		"cardId": "ironscale_guardian",
+		"level": 1
+	},
+	{
+		"cardId": "shadow_initiate",
+		"level": 1
+	},
+	{
+		"cardId": "vagrant_blade",
+		"level": 1
+	},
+	{
+		"cardId": "flame_wyrm",
+		"level": 1
+	},
+	{
+		"cardId": "unseen_sovereign",
+		"level": 1
+	},
+	{
+		"cardId": "iron_vanguard",
+		"level": 1
+	},
+	{
+		"cardId": "ashveil_acolyte",
+		"level": 1
+	},
+	{
+		"cardId": "fallen_wyrm",
+		"level": 1
+	}
+],
+"musicVolume": 0.48999998,
+"battleSpeed": "FAST"
+}

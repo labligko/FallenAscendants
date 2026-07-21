@@ -19,6 +19,9 @@ public class BattleManager {
     private StatusEffectResolver statusEffectResolver;
     private FactionSynergyResolver factionSynergyResolver;
     private FactionCounterEffectResolver factionCounterEffectResolver;
+    private Card lastAttacker;
+    private Card lastTarget;
+    private boolean lastActionWasBasicAttack;
 
     public BattleManager(BattleField playerField, BattleField enemyField) {
         this.playerField = playerField;
@@ -72,6 +75,10 @@ public class BattleManager {
     }
 
     public String processSingleAction() {
+        lastAttacker = null;
+        lastTarget = null;
+        lastActionWasBasicAttack = false;
+
         if (isBattleOver()) {
             return "Battle already finished.";
         }
@@ -140,6 +147,10 @@ public class BattleManager {
         if (target == null) {
             return attacker.getName() + " has no target.";
         }
+
+        lastAttacker = attacker;
+        lastTarget = target;
+        lastActionWasBasicAttack = true;
 
         DamageResult result = damageCalculator.calculateBasicAttack(attacker, target);
         target.takeDamage(
@@ -334,6 +345,18 @@ public class BattleManager {
 
         return log.toString();
     }
+
+    public BattleField getPlayerField() {return playerField;}
+
+    public BattleField getEnemyField() {return enemyField;}
+
+    public Card getLastAttacker() {return lastAttacker;}
+
+    public Card getLastTarget() {return lastTarget;}
+
+    public boolean wasLastActionBasicAttack() {return lastActionWasBasicAttack;}
+
+    public List<Card> getUpcomingTurnOrder(int limit) {return turnQueue.getUpcomingOrder(limit);}
 
     public String getTurnQueueReport() {
         return turnQueue.getQueueReport();

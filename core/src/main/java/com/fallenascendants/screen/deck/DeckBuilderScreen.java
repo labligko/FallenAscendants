@@ -17,6 +17,7 @@ import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.utils.viewport.FitViewport;
 import com.fallenascendants.FallenAscendantsGame;
 import com.fallenascendants.model.Player;
+import com.fallenascendants.screen.FullscreenToggle;
 import com.fallenascendants.screen.MainMenuScreen;
 
 public class DeckBuilderScreen implements Screen {
@@ -42,6 +43,7 @@ public class DeckBuilderScreen implements Screen {
         stage = new Stage(new FitViewport(1280, 720));
         Gdx.input.setInputProcessor(stage);
         skin = new Skin(Gdx.files.internal("ui/uiskin.json"));
+        FullscreenToggle.attach(stage);
 
         // Menggunakan Player yang sama dengan seluruh game (gold & collection persist antar screen)
         player = game.getPlayer();
@@ -57,7 +59,7 @@ public class DeckBuilderScreen implements Screen {
             }
         });
 
-        backgroundTexture = new Texture(Gdx.files.internal("background/background_lobby/UpgradeBackground.png"));
+        backgroundTexture = new Texture(Gdx.files.internal("background/background_lobby/DeckBuilderBackground.png"));
         backgroundTexture.setFilter(Texture.TextureFilter.Linear, Texture.TextureFilter.Linear);
         Image bg = new Image(backgroundTexture);
         bg.setSize(1280, 720);
@@ -93,7 +95,7 @@ public class DeckBuilderScreen implements Screen {
 
         mainSplitTable.clearChildren();
 
-        deckSlotPanel = new DeckSlotPanel(player, uiFont, titleFont);
+        deckSlotPanel = new DeckSlotPanel(game, player, uiFont, titleFont);
         collectionPoolPanel = new CollectionPoolPanel(game, player, skin, uiFont, titleFont, deckSlotPanel);
 
         mainSplitTable.add(collectionPoolPanel).width(880).expandY().fillY().top();

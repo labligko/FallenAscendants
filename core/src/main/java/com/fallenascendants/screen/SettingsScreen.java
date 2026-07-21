@@ -7,7 +7,11 @@ import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
-import com.badlogic.gdx.graphics.g2d.freetype.FreeTypeFontGenerator;
+import com.badlogic.gdx.graphics.g2d.freetype.
+import com.badlogic.gdx.scenes.scene2d.Stage;
+import com.badlogic.gdx.scenes.scene2d.ui.Skin;
+import com.badlogic.gdx.scenes.scene2d.ui.Table;
+import com.badlogic.gdx.utils.viewport.FitViewport;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.InputListener;
@@ -17,6 +21,8 @@ import com.badlogic.gdx.scenes.scene2d.ui.Image;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.scenes.scene2d.ui.Slider;
+import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
+import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.ui.ButtonGroup;
@@ -26,7 +32,9 @@ import com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable;
 import com.badlogic.gdx.utils.viewport.FitViewport;
 import com.fallenascendants.FallenAscendantsGame;
 import com.fallenascendants.enumtype.BattleSpeed;
+import com.badlogic.gdx.scenes.scene2d.ui.Dialog;
 import com.fallenascendants.save.SaveManager;
+import com.fallenascendants.FallenAscendantsGame;
 
 public class SettingsScreen implements Screen {
 
@@ -76,17 +84,16 @@ public class SettingsScreen implements Screen {
         stage.addActor(backgroundImage);
 
         skin = new Skin(Gdx.files.internal("ui/uiskin.json"));
+        FullscreenToggle.attach(stage);
 
-        // Global ESC handler to go back and save
-        stage.addListener(new InputListener() {
+
+        TextButton backButton = new TextButton("Back", skin);
+
+        backButton.addListener(new ClickListener() {
             @Override
-            public boolean keyDown(InputEvent event, int keycode) {
-                if (keycode == Input.Keys.ESCAPE) {
-                    game.saveProgress();
-                    game.setScreen(new MainMenuScreen(game));
-                    return true;
-                }
-                return false;
+            public void clicked(InputEvent event, float x, float y) {
+                game.saveProgress();
+                game.setScreen(new MainMenuScreen(game));
             }
         });
 
@@ -242,6 +249,8 @@ public class SettingsScreen implements Screen {
             @Override
             public void clicked(InputEvent event, float x, float y) {
                 musicSlider.setValue(Math.max(0f, musicSlider.getValue() - 0.1f));
+                game.setMusicVolume(musicSlider.getValue());
+                com.fallenascendants.audio.MusicManager.setVolume(musicSlider.getValue());
             }
         });
 
@@ -275,6 +284,9 @@ public class SettingsScreen implements Screen {
                 sfxSlider.setValue(Math.min(1f, sfxSlider.getValue() + 0.1f));
             }
         });
+        normalSpeedBtn = new TextButton("1x Normal", skin);
+        fastSpeedBtn = new TextButton("2x Fast", skin);
+        instantSpeedBtn = new TextButton("Skip", skin);
 
         normalSpeedBtn.addListener(new ClickListener() {
             @Override
@@ -344,14 +356,9 @@ public class SettingsScreen implements Screen {
         rebuildUI(width, height);
     }
 
-    @Override
-    public void pause() {}
-
-    @Override
-    public void resume() {}
-
-    @Override
-    public void hide() {}
+    @Override public void pause() {}
+    @Override public void resume() {}
+    @Override public void hide() {}
 
     @Override
     public void dispose() {

@@ -1,5 +1,7 @@
 package com.fallenascendants.screen;
 
+import com.badlogic.gdx.scenes.scene2d.ui.*;
+import com.fallenascendants.audio.MusicManager;
 import com.fallenascendants.screen.card.CollectionScreen;
 import com.fallenascendants.screen.deck.DeckBuilderScreen;
 
@@ -14,13 +16,9 @@ import com.badlogic.gdx.graphics.g2d.freetype.FreeTypeFontGenerator;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.InputListener;
 import com.badlogic.gdx.scenes.scene2d.Stage;
-import com.badlogic.gdx.scenes.scene2d.ui.Image;
-import com.badlogic.gdx.scenes.scene2d.ui.Label;
-import com.badlogic.gdx.scenes.scene2d.ui.Skin;
-import com.badlogic.gdx.scenes.scene2d.ui.Table;
-import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.badlogic.gdx.utils.viewport.FitViewport;
+import com.badlogic.gdx.audio.Music;
 import com.fallenascendants.FallenAscendantsGame;
 
 public class MainMenuScreen implements Screen {
@@ -45,6 +43,8 @@ public class MainMenuScreen implements Screen {
     private TextButton playButton, collectionButton, deckButton, settingsButton, exitButton;
     private float blinkTime = 0;
 
+    private Music lobbyMusic;
+
     public MainMenuScreen(FallenAscendantsGame game) {
         this.game = game;
     }
@@ -53,6 +53,8 @@ public class MainMenuScreen implements Screen {
     public void show() {
         stage = new Stage(new FitViewport(1280, 720));
         Gdx.input.setInputProcessor(stage);
+
+        MusicManager.play("sound/background_music/lobby_sound.mp3", true, game.getMusicVolume());
 
         backgroundTexture = new Texture(Gdx.files.internal("background/background_lobby/MainMenuBackgroundFix.png"));
         backgroundTexture.setFilter(Texture.TextureFilter.Linear, Texture.TextureFilter.Linear);
@@ -76,27 +78,7 @@ public class MainMenuScreen implements Screen {
         stage.addActor(backgroundImage);
 
         skin = new Skin(Gdx.files.internal("ui/uiskin.json"));
-
-        stage.addListener(new InputListener() {
-            @Override
-            public boolean keyDown(InputEvent event, int keycode) {
-                if (keycode == Input.Keys.F11) {
-                    if (!Gdx.graphics.isFullscreen()) {
-                        Gdx.graphics.setFullscreenMode(Gdx.graphics.getDisplayMode());
-                    } else {
-                        Gdx.graphics.setWindowedMode(1280, 720);
-                    }
-                    return true;
-                }
-                if (keycode == Input.Keys.ESCAPE) {
-                    if (Gdx.graphics.isFullscreen()) {
-                        Gdx.graphics.setWindowedMode(1280, 720);
-                    }
-                    return true;
-                }
-                return false;
-            }
-        });
+        FullscreenToggle.attach(stage);
 
         mainTable = new Table();
         mainTable.setFillParent(true);
@@ -180,20 +162,27 @@ public class MainMenuScreen implements Screen {
         mainTable.add(exitButton).width(216).height(85).padBottom(50).row();
 
         Label.LabelStyle footerStyle = new Label.LabelStyle(buttonFont, new Color(0.6f, 0.6f, 0.6f, 1f));
-        blinkLabel = new Label("Press [F11] for Fullscreen / [ESC] to Exit Fullscreen", footerStyle);
-        footerTable.add(blinkLabel);
+        blinkLabel = new Label("Press [F11] for Fullscreen", footerStyle);
+        footerTable.add(blinkLabel).padBottom(-10).row();
 
         // Blok listener aksi klik tombol
         playButton.addListener(new ClickListener() {
             @Override
             public void clicked(InputEvent event, float x, float y) {
-                System.out.println("Tombol Play Ditekan!");
+                if (!game.getPlayer().getDeck().isValidForBattle()) {
+                    Toast.show(stage, "Deck Not Found!.", 1f);
+                    return;
+                }
+                MusicManager.stop();
+
+                game.setScreen(new PreBattleScreen(game));
             }
         });
 
         collectionButton.addListener(new ClickListener() {
             @Override
             public void clicked(InputEvent event, float x, float y) {
+                MusicManager.stop();
                 game.setScreen(new CollectionScreen(game));
             }
         });
@@ -201,6 +190,7 @@ public class MainMenuScreen implements Screen {
         deckButton.addListener(new ClickListener() {
             @Override
             public void clicked(InputEvent event, float x, float y) {
+                MusicManager.stop();
                 game.setScreen(new DeckBuilderScreen(game));
             }
         });
@@ -208,6 +198,7 @@ public class MainMenuScreen implements Screen {
         settingsButton.addListener(new ClickListener() {
             @Override
             public void clicked(InputEvent event, float x, float y) {
+                MusicManager.stop();
                 game.setScreen(new SettingsScreen(game));
             }
         });
@@ -216,6 +207,7 @@ public class MainMenuScreen implements Screen {
             @Override
             public void clicked(InputEvent event, float x, float y) {
                 game.saveProgress();
+                MusicManager.stop();
                 Gdx.app.exit();
             }
         });
