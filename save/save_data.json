@@ -1,5 +1,5 @@
 {
-"gold": 3260,
+"gold": 4800,
 "collection": [
 	{
 		"cardId": "iron_vanguard",
@@ -104,8 +104,60 @@
 	{
 		"cardId": "fallen_wyrm",
 		"level": 1
+	},
+	{
+		"cardId": "sanctified_archer",
+		"level": 1
+	},
+	{
+		"cardId": "smokeveil",
+		"level": 1
+	},
+	{
+		"cardId": "celestial_dragon_undone",
+		"level": 1
+	},
+	{
+		"cardId": "the_nullborn",
+		"level": 1
+	},
+	{
+		"cardId": "broken_madonna",
+		"level": 1
+	},
+	{
+		"cardId": "flame_wyrm",
+		"level": 1
+	},
+	{
+		"cardId": "rift_duelist",
+		"level": 1
+	},
+	{
+		"cardId": "veilsworn",
+		"level": 1
+	},
+	{
+		"cardId": "dusk_cutthroat",
+		"level": 1
+	},
+	{
+		"cardId": "broken_madonna",
+		"level": 1
+	},
+	{
+		"cardId": "void_bishop",
+		"level": 1
+	},
+	{
+		"cardId": "thorngate_sentinel",
+		"level": 1
+	},
+	{
+		"cardId": "abyss_priest",
+		"level": 1
 	}
 ],
-"musicVolume": 0.5,
-"battleSpeed": "FAST"
+"musicVolume": 0,
+"battleSpeed": "INSTANT"
 }

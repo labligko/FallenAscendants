@@ -1,40 +1,31 @@
 package com.fallenascendants.screen;
 
 import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.Input;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.freetype.FreeTypeFontGenerator;
-import com.badlogic.gdx.scenes.scene2d.Stage;
-import com.badlogic.gdx.scenes.scene2d.ui.Skin;
-import com.badlogic.gdx.scenes.scene2d.ui.Table;
-import com.badlogic.gdx.utils.viewport.FitViewport;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
-import com.badlogic.gdx.scenes.scene2d.InputListener;
 import com.badlogic.gdx.scenes.scene2d.Stage;
+import com.badlogic.gdx.scenes.scene2d.ui.ButtonGroup;
 import com.badlogic.gdx.scenes.scene2d.ui.Dialog;
 import com.badlogic.gdx.scenes.scene2d.ui.Image;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.scenes.scene2d.ui.Slider;
-import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
-import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
-import com.badlogic.gdx.scenes.scene2d.ui.ButtonGroup;
 import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable;
+import com.badlogic.gdx.utils.Align;
 import com.badlogic.gdx.utils.viewport.FitViewport;
 import com.fallenascendants.FallenAscendantsGame;
 import com.fallenascendants.enumtype.BattleSpeed;
-import com.badlogic.gdx.scenes.scene2d.ui.Dialog;
 import com.fallenascendants.save.SaveManager;
-import com.fallenascendants.FallenAscendantsGame;
 
 public class SettingsScreen implements Screen {
 
@@ -83,19 +74,9 @@ public class SettingsScreen implements Screen {
         backgroundImage.setSize(1280, 720);
         stage.addActor(backgroundImage);
 
+        // Skin masih dibutuhkan untuk Slider dan Dialog bawaan
         skin = new Skin(Gdx.files.internal("ui/uiskin.json"));
         FullscreenToggle.attach(stage);
-
-
-        TextButton backButton = new TextButton("Back", skin);
-
-        backButton.addListener(new ClickListener() {
-            @Override
-            public void clicked(InputEvent event, float x, float y) {
-                game.saveProgress();
-                game.setScreen(new MainMenuScreen(game));
-            }
-        });
 
         mainTable = new Table();
         mainTable.setFillParent(true);
@@ -140,7 +121,7 @@ public class SettingsScreen implements Screen {
 
         mainTable.clearChildren();
 
-        // Custom Button Style (matches main menu hover borders)
+        // Custom Button Style
         TextButton.TextButtonStyle customButtonStyle = new TextButton.TextButtonStyle();
         customButtonStyle.up = new TextureRegionDrawable(buttonNormal);
         customButtonStyle.over = new TextureRegionDrawable(buttonHover);
@@ -153,7 +134,7 @@ public class SettingsScreen implements Screen {
         customButtonStyle.pressedOffsetX = 1;
         customButtonStyle.pressedOffsetY = -1;
 
-        // Setup setting panel container table (scaled to fit nicely in 1280x720)
+        // Setup setting panel container table
         Table dialogTable = new Table();
         dialogTable.setBackground(new TextureRegionDrawable(panelTexture));
         dialogTable.top().pad(150, 100, 110, 100);
@@ -204,12 +185,14 @@ public class SettingsScreen implements Screen {
         TextButton fastSpeedBtn = new TextButton("2x Fast", customButtonStyle);
         TextButton instantSpeedBtn = new TextButton("Skip Battle", customButtonStyle);
 
+        // Menggunakan ButtonGroup dari temanmu supaya tombol yang aktif terlihat jelas
         ButtonGroup<TextButton> speedGroup = new ButtonGroup<>();
         speedGroup.add(normalSpeedBtn, fastSpeedBtn, instantSpeedBtn);
         speedGroup.setMaxCheckCount(1);
         speedGroup.setMinCheckCount(1);
         speedGroup.setUncheckLast(true);
 
+        // Set status aktif sesuai data game saat ini
         if (game.getBattleSpeed() == BattleSpeed.NORMAL) normalSpeedBtn.setChecked(true);
         else if (game.getBattleSpeed() == BattleSpeed.FAST) fastSpeedBtn.setChecked(true);
         else if (game.getBattleSpeed() == BattleSpeed.INSTANT) instantSpeedBtn.setChecked(true);
@@ -231,16 +214,18 @@ public class SettingsScreen implements Screen {
 
         dialogTable.add(actionRow);
 
-        // Add setting panel to main container table (scaled to fit nicely in 1280x720)
         mainTable.add(dialogTable).size(1080, 780).center();
 
-        // ================= LISTENERS =================
+        // ================= LOGIC & LISTENERS (PERBAIKAN) =================
+
+        // Logic Volume Music
         musicSlider.setValue(game.getMusicVolume());
         musicSlider.addListener(new ChangeListener() {
             @Override
             public void changed(ChangeEvent event, Actor actor) {
                 float val = musicSlider.getValue();
                 game.setMusicVolume(val);
+                com.fallenascendants.audio.MusicManager.setVolume(val); // <- Ini yang hilang di kode temanmu
                 musicPercLabel.setText(Math.round(val * 100) + "%");
             }
         });
@@ -248,19 +233,18 @@ public class SettingsScreen implements Screen {
         decMusicBtn.addListener(new ClickListener() {
             @Override
             public void clicked(InputEvent event, float x, float y) {
-                musicSlider.setValue(Math.max(0f, musicSlider.getValue() - 0.1f));
-                game.setMusicVolume(musicSlider.getValue());
-                com.fallenascendants.audio.MusicManager.setVolume(musicSlider.getValue());
+                musicSlider.setValue(Math.max(0f, musicSlider.getValue() - 0.05f));
             }
         });
 
         incMusicBtn.addListener(new ClickListener() {
             @Override
             public void clicked(InputEvent event, float x, float y) {
-                musicSlider.setValue(Math.min(1f, musicSlider.getValue() + 0.1f));
+                musicSlider.setValue(Math.min(1f, musicSlider.getValue() + 0.05f));
             }
         });
 
+        // Logic SFX Music
         sfxSlider.setValue(game.getSfxVolume());
         sfxSlider.addListener(new ChangeListener() {
             @Override
@@ -274,20 +258,18 @@ public class SettingsScreen implements Screen {
         decSfxBtn.addListener(new ClickListener() {
             @Override
             public void clicked(InputEvent event, float x, float y) {
-                sfxSlider.setValue(Math.max(0f, sfxSlider.getValue() - 0.1f));
+                sfxSlider.setValue(Math.max(0f, sfxSlider.getValue() - 0.05f));
             }
         });
 
         incSfxBtn.addListener(new ClickListener() {
             @Override
             public void clicked(InputEvent event, float x, float y) {
-                sfxSlider.setValue(Math.min(1f, sfxSlider.getValue() + 0.1f));
+                sfxSlider.setValue(Math.min(1f, sfxSlider.getValue() + 0.05f));
             }
         });
-        normalSpeedBtn = new TextButton("1x Normal", skin);
-        fastSpeedBtn = new TextButton("2x Fast", skin);
-        instantSpeedBtn = new TextButton("Skip", skin);
 
+        // Logic Battle Speed (Dipasang ke custom button, bukan dibuat ulang)
         normalSpeedBtn.addListener(new ClickListener() {
             @Override
             public void clicked(InputEvent event, float x, float y) {
@@ -309,6 +291,7 @@ public class SettingsScreen implements Screen {
             }
         });
 
+        // Logic Reset & Back
         resetButton.addListener(new ClickListener() {
             @Override
             public void clicked(InputEvent event, float x, float y) {
@@ -323,7 +306,7 @@ public class SettingsScreen implements Screen {
                 };
 
                 Label dialogText = new Label("Yakin mau hapus semua progress?\nTindakan ini tidak bisa dibatalkan.", new Label.LabelStyle(buttonFont, Color.WHITE));
-                dialogText.setAlignment(com.badlogic.gdx.utils.Align.center);
+                dialogText.setAlignment(Align.center);
                 confirmDialog.getContentTable().add(dialogText).pad(20);
 
                 confirmDialog.button("Yes, Reset", true, customButtonStyle);
