@@ -7,7 +7,7 @@ import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
-import com.badlogic.gdx.graphics.g2d.freetype.
+import com.badlogic.gdx.graphics.g2d.freetype.FreeTypeFontGenerator;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
@@ -160,7 +160,7 @@ public class SettingsScreen implements Screen {
 
         // ================= TITLE =================
         Label titleLabel = new Label("SETTINGS", new Label.LabelStyle(titleFont, Color.WHITE));
-        dialogTable.add(titleLabel).padBottom(25).row();
+        dialogTable.add(titleLabel).padBottom(5).padTop(40).row();
 
         // ================= MUSIC VOLUME =================
         Label musicLabel = new Label("MUSIC VOLUME", new Label.LabelStyle(sectionFont, Color.WHITE));
@@ -177,7 +177,7 @@ public class SettingsScreen implements Screen {
         musicRow.add(incMusicBtn).size(45, 35).padLeft(10);
         musicRow.add(musicPercLabel).width(50).padLeft(15).center();
 
-        dialogTable.add(musicRow).padBottom(20).row();
+        dialogTable.add(musicRow).padBottom(20).padLeft(70).row();
 
         // ================= SFX VOLUME =================
         Label sfxLabel = new Label("SFX VOLUME", new Label.LabelStyle(sectionFont, Color.WHITE));
@@ -194,7 +194,7 @@ public class SettingsScreen implements Screen {
         sfxRow.add(incSfxBtn).size(45, 35).padLeft(10);
         sfxRow.add(sfxPercLabel).width(50).padLeft(15).center();
 
-        dialogTable.add(sfxRow).padBottom(20).row();
+        dialogTable.add(sfxRow).padBottom(20).padLeft(70).row();
 
         // ================= BATTLE SPEED =================
         Label speedLabel = new Label("BATTLE SPEED", new Label.LabelStyle(sectionFont, Color.WHITE));
@@ -232,7 +232,7 @@ public class SettingsScreen implements Screen {
         dialogTable.add(actionRow);
 
         // Add setting panel to main container table (scaled to fit nicely in 1280x720)
-        mainTable.add(dialogTable).size(1080, 720).center();
+        mainTable.add(dialogTable).size(1080, 780).center();
 
         // ================= LISTENERS =================
         musicSlider.setValue(game.getMusicVolume());
