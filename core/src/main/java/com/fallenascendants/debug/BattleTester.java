@@ -48,7 +48,7 @@ public class BattleTester {
             java.util.List<Card> collection = player.getCollection();
             for (int i = 0; i < collection.size(); i++) {
                 Card c = collection.get(i);
-                int dupCount = player.getDuplicateCount(c.getId(), c);
+                int dupCount = c.getCopies() - 1;
                 System.out.println("[" + (i + 1) + "] " + c.getName() + " (Lvl: " + c.getLevel() + ") | HP: " + c.getMaxHp() + " | ATK: " + c.getAtk() + " | DEF: " + c.getDef() + " | Duplikat: " + dupCount);
             }
 
@@ -68,7 +68,7 @@ public class BattleTester {
                 int costDup = targetCard.getLevel();
                 System.out.println("Mencoba upgrade " + targetCard.getName() + " ke level " + (targetCard.getLevel() + 1));
                 System.out.println("Biaya: " + costGold + " Gold dan " + costDup + " Kartu Duplikat");
-                
+
                 boolean success = ProgressionManager.upgradeCard(player, targetCard);
                 if (success) {
                     System.out.println("UPGRADE BERHASIL! Level sekarang: " + targetCard.getLevel() + ", HP: " + targetCard.getMaxHp() + ", ATK: " + targetCard.getAtk() + ", DEF: " + targetCard.getDef());
@@ -87,7 +87,7 @@ public class BattleTester {
         for (int i = 0; i < collection.size() && !playerDeck.isFull(); i++) {
             playerDeck.addCard(collection.get(i));
         }
-        
+
         // Jika kartu kurang dari 8, lengkapi dengan kartu acak dari database
         while (!playerDeck.isFull()) {
             playerDeck.addCard(CardDatabase.getRandomCardByRarity(Rarity.COMMON));

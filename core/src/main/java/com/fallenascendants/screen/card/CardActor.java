@@ -136,6 +136,12 @@ public class CardActor extends Table {
         return solidPixel;
     }
 
+    // Fungsi baru untuk dipanggil dari RewardScreen
+    public void setLabelsVisible(boolean visible) {
+        if (nameLabel != null) nameLabel.setVisible(visible);
+        if (lvlLabel != null) lvlLabel.setVisible(visible);
+    }
+
     @Override
     public void draw(Batch batch, float parentAlpha) {
         this.validate();
@@ -167,7 +173,8 @@ public class CardActor extends Table {
 
         float platePad = 4f;
 
-        if (nameCell.getActorHeight() > 0) {
+        // Tambahkan pengecekan nameLabel.isVisible()
+        if (nameLabel.isVisible() && nameCell.getActorHeight() > 0) {
             batch.draw(getSolidPixel(),
                 insetLeft,
                 nameCell.getActorY() - platePad,
@@ -175,7 +182,8 @@ public class CardActor extends Table {
                 nameCell.getActorHeight() + platePad * 2);
         }
 
-        if (lvlCell.getActorHeight() > 0) {
+        // Tambahkan pengecekan lvlLabel.isVisible()
+        if (lvlLabel.isVisible() && lvlCell.getActorHeight() > 0) {
             batch.draw(getSolidPixel(),
                 lvlCell.getActorX() - platePad,
                 lvlCell.getActorY() - platePad,

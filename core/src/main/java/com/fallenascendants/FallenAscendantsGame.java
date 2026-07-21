@@ -1,8 +1,10 @@
 package com.fallenascendants;
 
 import com.badlogic.gdx.Game;
-//import com.fallenascendants.debug.BattleTester;
+import com.fallenascendants.data.CardDatabase;
 import com.fallenascendants.enumtype.BattleSpeed;
+import com.fallenascendants.enumtype.Rarity;
+import com.fallenascendants.model.Card;
 import com.fallenascendants.model.Player;
 import com.fallenascendants.save.SaveData;
 import com.fallenascendants.save.SaveManager;
@@ -17,25 +19,43 @@ public class FallenAscendantsGame extends Game {
 
     @Override
     public void create() {
-        player = new Player("Reyzz");
+        player = new Player("Reyzz"); // Atau ambil dari input nama jika ada fitur buat nama
 
         SaveData saveData = SaveManager.load();
         if (saveData != null) {
+            // ==========================================
+            // PEMAIN LAMA (Load Data)
+            // ==========================================
             SaveManager.applyToPlayer(saveData, player);
             musicVolume = saveData.musicVolume;
             sfxVolume = saveData.sfxVolume;
             battleSpeed = saveData.battleSpeed;
+        } else {
+            // ==========================================
+            // PEMAIN BARU (Starter Pack)
+            // ==========================================
+            // Berikan 3 kartu acak dengan Rarity COMMON
+            for (int i = 0; i < 3; i++) {
+                Card randomCard = CardDatabase.getRandomCardByRarity(Rarity.COMMON);
+
+                // Tambahkan ke koleksi
+                player.addCardToCollection(randomCard);
+
+                // Tambahkan ke deck secara otomatis
+                player.getDeck().addCard(randomCard);
+            }
+
+            // Langsung save agar file JSON terbentuk dengan 3 kartu ini
+            saveProgress();
         }
-//        BattleTester.runTest();
+
         setScreen(new MainMenuScreen(this));
     }
 
-    //fungsi pemanggil save
     public void saveProgress() {
         SaveManager.save(player, musicVolume, sfxVolume, battleSpeed);
     }
-    
-    //Getter/setter biar screen lain bisa akses
+
     public Player getPlayer() {
         return player;
     }

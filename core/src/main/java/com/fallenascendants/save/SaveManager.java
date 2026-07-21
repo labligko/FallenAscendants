@@ -9,7 +9,6 @@ import com.fallenascendants.enumtype.BattleSpeed;
 import com.fallenascendants.model.Card;
 import com.fallenascendants.model.Player;
 
-import java.util.ArrayList;
 import java.util.List;
 
 public class SaveManager {
@@ -20,15 +19,6 @@ public class SaveManager {
         return Gdx.files.local(SAVE_PATH);
     }
 
-    private static int indexOfReference(List<Card> list, Card target) {
-        for (int i = 0; i < list.size(); i++) {
-            if (list.get(i) == target) {
-                return i;
-            }
-        }
-        return -1;
-    }
-
     public static void save(Player player, float musicVolume, float sfxVolume, BattleSpeed battleSpeed) {
         SaveData data = new SaveData();
         data.gold = player.getGold();
@@ -36,17 +26,14 @@ public class SaveManager {
         data.sfxVolume = sfxVolume;
         data.battleSpeed = battleSpeed;
 
-        List<Card> collection = player.getCollection();
-        for (Card card : collection) {
-            data.collection.add(new SaveData.CardEntry(card.getId(), card.getLevel()));
+        // Simpan koleksi beserta jumlah duplikatnya
+        for (Card card : player.getCollection()) {
+            data.collection.add(new SaveData.CardEntry(card.getId(), card.getLevel(), card.getCopies()));
         }
 
-        List<Card> deckCards = player.getDeck().getCards();
-        for (Card deckCard : deckCards) {
-            int index = indexOfReference(collection, deckCard);
-            if (index >= 0) {
-                data.deckIndices.add(index);
-            }
+        // Simpan Deck menggunakan ID kartu (Aman dari bug sorting)
+        for (Card deckCard : player.getDeck().getCards()) {
+            data.deckCardIds.add(deckCard.getId());
         }
 
         Json json = new Json();
@@ -57,7 +44,7 @@ public class SaveManager {
     public static SaveData load() {
         FileHandle file = getSaveFile();
         if (!file.exists()) {
-            return null; // belum pernah save sebelumnya, ini normal (misal first run)
+            return null; // Trigger Pemain Baru
         }
 
         Json json = new Json();
@@ -69,22 +56,29 @@ public class SaveManager {
             return;
         }
 
+        player.resetProgress(); // Bersihkan player saat ini biar data tidak menumpuk ganda
         player.addGold(data.gold);
 
-        List<Card> rebuiltCollection = new ArrayList<>();
         for (SaveData.CardEntry entry : data.collection) {
-            Card card = CardDatabase.getCardById(entry.cardId); // selalu balikin level 1 fresh
-            int levelUps = entry.level - card.getLevel();       // biasanya level - 1
-            for (int i = 0; i < levelUps; i++) {
-                card.levelUp();
+            Card card = CardDatabase.getCardById(entry.cardId);
+            if (card != null) {
+                int levelUps = entry.level - card.getLevel();
+                for (int i = 0; i < levelUps; i++) {
+                    card.levelUp();
+                }
+                // Pakai method load khusus
+                player.loadCardToCollection(card, entry.copies);
             }
-            rebuiltCollection.add(card);
-            player.addCardToCollection(card);
         }
 
-        for (Integer index : data.deckIndices) {
-            if (index != null && index >= 0 && index < rebuiltCollection.size()) {
-                player.getDeck().addCard(rebuiltCollection.get(index));
+        // Load Deck
+        for (String cardId : data.deckCardIds) {
+            // Cocokkan ID dari koleksi player yang sudah di-load
+            for (Card collectionCard : player.getCollection()) {
+                if (collectionCard.getId().equals(cardId)) {
+                    player.getDeck().addCard(collectionCard);
+                    break;
+                }
             }
         }
     }
