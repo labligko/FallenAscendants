@@ -1,15 +1,11 @@
 {
-"gold": 3380,
+"playerName": "Ascendant",
+"gold": 720,
 "collection": [
 	{
-		"cardId": "thorngate_sentinel",
+		"cardId": "warbrand_mender",
 		"level": 1,
-		"copies": 2
-	},
-	{
-		"cardId": "scalebinder",
-		"level": 1,
-		"copies": 4
+		"copies": 1
 	},
 	{
 		"cardId": "ironscale_guardian",
@@ -17,97 +13,22 @@
 		"copies": 1
 	},
 	{
-		"cardId": "the_nullborn",
+		"cardId": "stormrider",
 		"level": 1,
 		"copies": 1
 	},
 	{
-		"cardId": "mournveil",
+		"cardId": "smokeveil",
 		"level": 1,
 		"copies": 1
 	},
 	{
-		"cardId": "the_last_congregation",
+		"cardId": "wyvern_hatchling",
 		"level": 1,
 		"copies": 1
 	},
 	{
-		"cardId": "celestial_dragon_undone",
-		"level": 1,
-		"copies": 2
-	},
-	{
-		"cardId": "vagrant_blade",
-		"level": 1,
-		"copies": 2
-	},
-	{
-		"cardId": "ashscale_bulwark",
-		"level": 1,
-		"copies": 1
-	},
-	{
-		"cardId": "hollow_grunt",
-		"level": 1,
-		"copies": 1
-	},
-	{
-		"cardId": "shadow_initiate",
-		"level": 1,
-		"copies": 1
-	},
-	{
-		"cardId": "nightshade_binder",
-		"level": 1,
-		"copies": 1
-	},
-	{
-		"cardId": "stormscale",
-		"level": 1,
-		"copies": 2
-	},
-	{
-		"cardId": "warbrand_mender",
-		"level": 1,
-		"copies": 2
-	},
-	{
-		"cardId": "flame_wyrm",
-		"level": 1,
-		"copies": 1
-	},
-	{
-		"cardId": "void_paladin",
-		"level": 1,
-		"copies": 1
-	},
-	{
-		"cardId": "rift_spark",
-		"level": 1,
-		"copies": 2
-	},
-	{
-		"cardId": "shattered_void_knight",
-		"level": 1,
-		"copies": 1
-	},
-	{
-		"cardId": "vael_the_uncrowned",
-		"level": 1,
-		"copies": 1
-	},
-	{
-		"cardId": "abyssal_hulk",
-		"level": 1,
-		"copies": 1
-	},
-	{
-		"cardId": "runebound_seeker",
-		"level": 1,
-		"copies": 1
-	},
-	{
-		"cardId": "doom_reader",
+		"cardId": "dusk_cutthroat",
 		"level": 1,
 		"copies": 1
 	},
@@ -117,36 +38,24 @@
 		"copies": 1
 	},
 	{
-		"cardId": "sacred_outlaw",
+		"cardId": "vael_the_uncrowned",
 		"level": 1,
 		"copies": 1
 	},
 	{
-		"cardId": "stolen_grace",
-		"level": 1,
-		"copies": 2
-	},
-	{
-		"cardId": "void_bishop",
-		"level": 1,
-		"copies": 1
-	},
-	{
-		"cardId": "deepborn_acolyte",
-		"level": 1,
-		"copies": 1
-	},
-	{
-		"cardId": "veilsworn",
+		"cardId": "fallen_seraph",
 		"level": 1,
 		"copies": 1
 	}
 ],
 "deckCardIds": [
-	"mournveil",
-	"the_last_congregation",
-	"celestial_dragon_undone",
-	"the_nullborn"
+	"fallen_wyrm",
+	"ironscale_guardian",
+	"stormrider",
+	"wyvern_hatchling",
+	"warbrand_mender",
+	"dusk_cutthroat",
+	"smokeveil"
 ],
 "battleSpeed": "INSTANT"
 }

@@ -23,6 +23,8 @@ import com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable;
 import com.badlogic.gdx.utils.Align;
 import com.badlogic.gdx.utils.viewport.FitViewport;
 import com.fallenascendants.FallenAscendantsGame;
+import com.fallenascendants.audio.MusicManager;
+import com.fallenascendants.audio.SFXManager;
 import com.fallenascendants.battle.BattleManager;
 import com.fallenascendants.data.DummyBattleFactory;
 import com.fallenascendants.enumtype.Rarity;
@@ -69,6 +71,8 @@ public class PreBattleScreen implements Screen {
         stage = new Stage(new FitViewport(1280, 720));
         Gdx.input.setInputProcessor(stage);
         skin = new Skin(Gdx.files.internal("ui/uiskin.json"));
+
+        MusicManager.play("sound/background_music/prebattle_show.mp3", false, game.getMusicVolume());
 
         FullscreenToggle.attach(stage);
 
@@ -147,10 +151,12 @@ public class PreBattleScreen implements Screen {
             @Override
             public boolean keyDown(InputEvent event, int keycode) {
                 if (keycode == Input.Keys.ENTER) {
+                    SFXManager.play("sound/sound_effect/clickbutton.mp3", game.getSfxVolume());
                     startBattle();
                     return true;
                 }
                 if (keycode == Input.Keys.ESCAPE) {
+                    SFXManager.play("sound/sound_effect/clickbutton.mp3", game.getSfxVolume());
                     game.setScreen(new MainMenuScreen(game));
                     return true;
                 }
@@ -220,6 +226,9 @@ public class PreBattleScreen implements Screen {
         cardActor.addListener(new InputListener() {
             @Override
             public void enter(InputEvent event, float x, float y, int pointer, Actor fromActor) {
+                if (pointer == -1) {
+                    SFXManager.play("sound/sound_effect/hoverbutton.mp3", game.getSfxVolume());
+                }
                 showStatsTooltip(cardActor, card, isPlayerSide, width);
             }
 

@@ -9,8 +9,12 @@ import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.freetype.FreeTypeFontGenerator;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
+import com.badlogic.gdx.scenes.scene2d.InputListener;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.ButtonGroup;
+import com.badlogic.gdx.scenes.scene2d.actions.Actions;
+import com.badlogic.gdx.graphics.Pixmap;
+import com.badlogic.gdx.scenes.scene2d.ui.Stack;
 import com.badlogic.gdx.scenes.scene2d.ui.Dialog;
 import com.badlogic.gdx.scenes.scene2d.ui.Image;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
@@ -55,7 +59,6 @@ public class SettingsScreen implements Screen {
         stage = new Stage(new FitViewport(1280, 720));
         Gdx.input.setInputProcessor(stage);
 
-        // Load background and panel textures
         backgroundTexture = new Texture(Gdx.files.internal("background/background_lobby/SettingsBackgroundBlur.png"));
         backgroundTexture.setFilter(Texture.TextureFilter.Linear, Texture.TextureFilter.Linear);
 
@@ -71,12 +74,10 @@ public class SettingsScreen implements Screen {
         buttonPressed = new Texture(Gdx.files.internal("Button/PressedButton.png"));
         buttonPressed.setFilter(Texture.TextureFilter.Linear, Texture.TextureFilter.Linear);
 
-        // Add background image
         Image backgroundImage = new Image(backgroundTexture);
         backgroundImage.setSize(1280, 720);
         stage.addActor(backgroundImage);
 
-        // Skin masih dibutuhkan untuk Slider dan Dialog bawaan
         skin = new Skin(Gdx.files.internal("ui/uiskin.json"));
         FullscreenToggle.attach(stage);
 
@@ -86,14 +87,12 @@ public class SettingsScreen implements Screen {
     }
 
     private void rebuildUI(int width, int height) {
-        // Clean up old fonts
         if (titleFont != null) titleFont.dispose();
         if (sectionFont != null) sectionFont.dispose();
         if (buttonFont != null) buttonFont.dispose();
 
         float scale = (float) height / 720f;
 
-        // Generate custom fonts
         FreeTypeFontGenerator generator = new FreeTypeFontGenerator(Gdx.files.internal("fonts/CinzelDecorative-Regular.ttf"));
         FreeTypeFontGenerator.FreeTypeFontParameter parameter = new FreeTypeFontGenerator.FreeTypeFontParameter();
 
@@ -123,7 +122,6 @@ public class SettingsScreen implements Screen {
 
         mainTable.clearChildren();
 
-        // Custom Button Style
         TextButton.TextButtonStyle customButtonStyle = new TextButton.TextButtonStyle();
         customButtonStyle.up = new TextureRegionDrawable(buttonNormal);
         customButtonStyle.over = new TextureRegionDrawable(buttonHover);
@@ -136,16 +134,15 @@ public class SettingsScreen implements Screen {
         customButtonStyle.pressedOffsetX = 1;
         customButtonStyle.pressedOffsetY = -1;
 
-        // Setup setting panel container table
         Table dialogTable = new Table();
         dialogTable.setBackground(new TextureRegionDrawable(panelTexture));
         dialogTable.top().pad(150, 100, 110, 100);
 
-        // ================= TITLE =================
+        // TITLE
         Label titleLabel = new Label("SETTINGS", new Label.LabelStyle(titleFont, Color.WHITE));
         dialogTable.add(titleLabel).padBottom(5).padTop(40).row();
 
-        // ================= MUSIC VOLUME =================
+        // MUSIC VOLUME
         Label musicLabel = new Label("MUSIC VOLUME", new Label.LabelStyle(sectionFont, Color.WHITE));
         dialogTable.add(musicLabel).padBottom(5).row();
 
@@ -162,7 +159,7 @@ public class SettingsScreen implements Screen {
 
         dialogTable.add(musicRow).padBottom(20).padLeft(70).row();
 
-        // ================= SFX VOLUME =================
+        // SFX VOLUME
         Label sfxLabel = new Label("SFX VOLUME", new Label.LabelStyle(sectionFont, Color.WHITE));
         dialogTable.add(sfxLabel).padBottom(5).row();
 
@@ -179,7 +176,7 @@ public class SettingsScreen implements Screen {
 
         dialogTable.add(sfxRow).padBottom(20).padLeft(70).row();
 
-        // ================= BATTLE SPEED =================
+        // BATTLE SPEED
         Label speedLabel = new Label("BATTLE SPEED", new Label.LabelStyle(sectionFont, Color.WHITE));
         dialogTable.add(speedLabel).padBottom(8).row();
 
@@ -187,14 +184,12 @@ public class SettingsScreen implements Screen {
         TextButton fastSpeedBtn = new TextButton("2x Fast", customButtonStyle);
         TextButton instantSpeedBtn = new TextButton("Skip Battle", customButtonStyle);
 
-        // Menggunakan ButtonGroup dari temanmu supaya tombol yang aktif terlihat jelas
         ButtonGroup<TextButton> speedGroup = new ButtonGroup<>();
         speedGroup.add(normalSpeedBtn, fastSpeedBtn, instantSpeedBtn);
         speedGroup.setMaxCheckCount(1);
         speedGroup.setMinCheckCount(1);
         speedGroup.setUncheckLast(true);
 
-        // Set status aktif sesuai data game saat ini
         if (game.getBattleSpeed() == BattleSpeed.NORMAL) normalSpeedBtn.setChecked(true);
         else if (game.getBattleSpeed() == BattleSpeed.FAST) fastSpeedBtn.setChecked(true);
         else if (game.getBattleSpeed() == BattleSpeed.INSTANT) instantSpeedBtn.setChecked(true);
@@ -206,9 +201,9 @@ public class SettingsScreen implements Screen {
 
         dialogTable.add(speedRow).padBottom(25).row();
 
-        // ================= ACTION BUTTONS =================
+        // ACTION BUTTONS
         TextButton resetButton = new TextButton("Reset Save Data", customButtonStyle);
-        TextButton backButton = new TextButton("Back", customButtonStyle);
+        TextButton backButton = new TextButton("Back & Save", customButtonStyle);
 
         Table actionRow = new Table();
         actionRow.add(resetButton).size(180, 42).padRight(20);
@@ -218,16 +213,34 @@ public class SettingsScreen implements Screen {
 
         mainTable.add(dialogTable).size(1080, 780).center();
 
-        // ================= LOGIC & LISTENERS (PERBAIKAN) =================
+        // ================= PASANG HOVER SFX UNTUK SEMUA TOMBOL =================
+        TextButton[] allButtons = {
+            decMusicBtn, incMusicBtn, decSfxBtn, incSfxBtn,
+            normalSpeedBtn, fastSpeedBtn, instantSpeedBtn,
+            resetButton, backButton
+        };
 
-        // Logic Volume Music
+        for (TextButton btn : allButtons) {
+            btn.addListener(new InputListener() {
+                @Override
+                public void enter(InputEvent event, float x, float y, int pointer, Actor fromActor) {
+                    if (pointer == -1) {
+                        SFXManager.play("sound/sound_effect/hoverbutton.mp3", game.getSfxVolume());
+                    }
+                }
+            });
+        }
+
+        // ================= LOGIC & LISTENERS =================
+
+        // Music Slider
         musicSlider.setValue(game.getMusicVolume());
         musicSlider.addListener(new ChangeListener() {
             @Override
             public void changed(ChangeEvent event, Actor actor) {
                 float val = musicSlider.getValue();
                 game.setMusicVolume(val);
-                com.fallenascendants.audio.MusicManager.setVolume(val); // <- Ini yang hilang di kode temanmu
+                MusicManager.setVolume(val);
                 musicPercLabel.setText(Math.round(val * 100) + "%");
             }
         });
@@ -235,6 +248,7 @@ public class SettingsScreen implements Screen {
         decMusicBtn.addListener(new ClickListener() {
             @Override
             public void clicked(InputEvent event, float x, float y) {
+                SFXManager.play("sound/sound_effect/clickbutton.mp3", game.getSfxVolume());
                 musicSlider.setValue(Math.max(0f, musicSlider.getValue() - 0.05f));
             }
         });
@@ -242,11 +256,12 @@ public class SettingsScreen implements Screen {
         incMusicBtn.addListener(new ClickListener() {
             @Override
             public void clicked(InputEvent event, float x, float y) {
+                SFXManager.play("sound/sound_effect/clickbutton.mp3", game.getSfxVolume());
                 musicSlider.setValue(Math.min(1f, musicSlider.getValue() + 0.05f));
             }
         });
 
-        // 1. ChangeListener: Khusus update volume & cover ubah nilai tanpa drag (misal via button / klik instan)
+        // SFX Slider Logic
         sfxSlider.setValue(game.getSfxVolume());
         sfxSlider.addListener(new ChangeListener() {
             @Override
@@ -255,25 +270,23 @@ public class SettingsScreen implements Screen {
                 game.setSfxVolume(val);
                 sfxPercLabel.setText(Math.round(val * 100) + "%");
 
-                // HANYA play sound di sini kalau slider BUKAN lagi di-drag
-                // (contoh: nilainya diubah lewat kodingan / tombol step + - / keyboard)
+                // Preview SFX hanya jalan kalau BUKAN lagi di-drag
                 if (!sfxSlider.isDragging()) {
                     SFXManager.play("sound/sound_effect/sard_slap.wav", val);
                 }
             }
         });
 
-// 2. ClickListener: Khusus play sound 1x saat selesainya aksi drag (lepas mouse/touch)
         sfxSlider.addListener(new ClickListener() {
             @Override
             public void touchUp(InputEvent event, float x, float y, int pointer, int button) {
                 super.touchUp(event, x, y, pointer, button);
-
-                // Play SFX preview tepat saat user melepas geseran slider
+                // Preview SFX tepat saat lepas geseran slider
                 SFXManager.play("sound/sound_effect/sard_slap.wav", sfxSlider.getValue());
             }
         });
 
+        // Tombol < dan > SFX TANPA clickbutton.mp3 agar tidak bertabrakan dengan sard_slap.wav
         decSfxBtn.addListener(new ClickListener() {
             @Override
             public void clicked(InputEvent event, float x, float y) {
@@ -288,10 +301,11 @@ public class SettingsScreen implements Screen {
             }
         });
 
-        // Logic Battle Speed (Dipasang ke custom button, bukan dibuat ulang)
+        // Battle Speed Buttons
         normalSpeedBtn.addListener(new ClickListener() {
             @Override
             public void clicked(InputEvent event, float x, float y) {
+                SFXManager.play("sound/sound_effect/clickbutton.mp3", game.getSfxVolume());
                 game.setBattleSpeed(BattleSpeed.NORMAL);
             }
         });
@@ -299,6 +313,7 @@ public class SettingsScreen implements Screen {
         fastSpeedBtn.addListener(new ClickListener() {
             @Override
             public void clicked(InputEvent event, float x, float y) {
+                SFXManager.play("sound/sound_effect/clickbutton.mp3", game.getSfxVolume());
                 game.setBattleSpeed(BattleSpeed.FAST);
             }
         });
@@ -306,37 +321,154 @@ public class SettingsScreen implements Screen {
         instantSpeedBtn.addListener(new ClickListener() {
             @Override
             public void clicked(InputEvent event, float x, float y) {
+                SFXManager.play("sound/sound_effect/clickbutton.mp3", game.getSfxVolume());
                 game.setBattleSpeed(BattleSpeed.INSTANT);
             }
         });
 
-        // Logic Reset & Back
+        // Reset & Back
         resetButton.addListener(new ClickListener() {
             @Override
             public void clicked(InputEvent event, float x, float y) {
-                Dialog confirmDialog = new Dialog("Confirm Reset", skin) {
+                SFXManager.play("sound/sound_effect/clickbutton.mp3", game.getSfxVolume());
+
+                // 1. Overlay Layar Gelap (Dim)
+                Pixmap pixmap = new Pixmap(1, 1, Pixmap.Format.RGBA8888);
+                pixmap.setColor(0f, 0f, 0f, 0.75f);
+                pixmap.fill();
+                final Texture dimTexture = new Texture(pixmap);
+                pixmap.dispose();
+
+                final Image blocker = new Image(new TextureRegionDrawable(dimTexture));
+                blocker.setSize(stage.getViewport().getWorldWidth(), stage.getViewport().getWorldHeight());
+                blocker.addListener(new InputListener() {
                     @Override
-                    protected void result(Object confirmed) {
-                        if (Boolean.TRUE.equals(confirmed)) {
-                            SaveManager.deleteSave();
-                            game.getPlayer().resetProgress();
-                        }
+                    public boolean touchDown(InputEvent event, float x, float y, int pointer, int button) {
+                        return true;
+                    }
+                });
+
+                // 2. Texture Frame Toast
+                final Texture toastTex = new Texture(Gdx.files.internal("Panel/ToolTipPanel.png"));
+                toastTex.setFilter(Texture.TextureFilter.Linear, Texture.TextureFilter.Linear);
+                Image background = new Image(new TextureRegionDrawable(toastTex));
+
+                // 3. Generate Font Murni Putih (Pure White) khusus Dialog
+                FreeTypeFontGenerator generator = new FreeTypeFontGenerator(Gdx.files.internal("fonts/CinzelDecorative-Regular.ttf"));
+                FreeTypeFontGenerator.FreeTypeFontParameter parameter = new FreeTypeFontGenerator.FreeTypeFontParameter();
+                float scale = (float) Gdx.graphics.getHeight() / 720f;
+                parameter.size = Math.round(18 * scale);
+                parameter.color = Color.WHITE; // Murni Putih
+                parameter.borderWidth = 1.5f * scale;
+                parameter.borderColor = Color.BLACK;
+                final BitmapFont whiteFont = generator.generateFont(parameter);
+                generator.dispose();
+                whiteFont.getData().setScale(1f / scale);
+
+                // 4. Label & Tombol
+                Label dialogText = new Label("Yakin mau hapus semua progress?\nTindakan ini tidak bisa dibatalkan.",
+                    new Label.LabelStyle(whiteFont, Color.WHITE));
+                dialogText.setAlignment(Align.center);
+
+                TextButton yesBtn = new TextButton("Yes, Reset", customButtonStyle);
+                TextButton cancelBtn = new TextButton("Cancel", customButtonStyle);
+
+                InputListener dialogBtnHover = new InputListener() {
+                    @Override
+                    public void enter(InputEvent event, float x, float y, int pointer, Actor fromActor) {
+                        if (pointer == -1) SFXManager.play("sound/sound_effect/hoverbutton.mp3", game.getSfxVolume());
+                    }
+                };
+                yesBtn.addListener(dialogBtnHover);
+                cancelBtn.addListener(dialogBtnHover);
+
+                // 5. Layout Table dengan Padding Atas & Samping yang Lebih Longgar
+                Table contentTable = new Table();
+                // pad(Top, Left, Bottom, Right) -> Top 75px & Left/Right 85px memberi ruang jauh dari ukiran bingkai
+                contentTable.pad(75, 85, 50, 85);
+                contentTable.add(dialogText).colspan(2).padBottom(30).row();
+                contentTable.add(yesBtn).size(160, 42).padRight(20);
+                contentTable.add(cancelBtn).size(160, 42);
+
+                // 6. Stack & Ukuran Toast (Dilebarkan ke 680px)
+                final Stack stack = new Stack();
+                stack.add(background);
+                stack.add(contentTable);
+
+                float width = 680f;  // Melebarkan panel dari 550f ke 680f
+                float height = 350f; // Menyesuaikan tinggi
+                stack.setSize(width, height);
+                stack.setPosition(
+                    (stage.getViewport().getWorldWidth() - width) / 2f,
+                    (stage.getViewport().getWorldHeight() - height) / 2f
+                );
+
+                // 7. Close Logic & Disposal
+                Runnable closeDialog = new Runnable() {
+                    @Override
+                    public void run() {
+                        blocker.addAction(Actions.sequence(Actions.fadeOut(0.2f), Actions.removeActor()));
+                        stack.addAction(Actions.sequence(Actions.fadeOut(0.2f), Actions.run(new Runnable() {
+                            @Override
+                            public void run() {
+                                stack.remove();
+                                dimTexture.dispose();
+                                toastTex.dispose();
+                                whiteFont.dispose(); // Membersihkan memory font putih
+                            }
+                        })));
                     }
                 };
 
-                Label dialogText = new Label("Yakin mau hapus semua progress?\nTindakan ini tidak bisa dibatalkan.", new Label.LabelStyle(buttonFont, Color.WHITE));
-                dialogText.setAlignment(Align.center);
-                confirmDialog.getContentTable().add(dialogText).pad(20);
+                cancelBtn.addListener(new ClickListener() {
+                    @Override
+                    public void clicked(InputEvent event, float x, float y) {
+                        SFXManager.play("sound/sound_effect/clickbutton.mp3", game.getSfxVolume());
+                        closeDialog.run();
+                    }
+                });
 
-                confirmDialog.button("Yes, Reset", true, customButtonStyle);
-                confirmDialog.button("Cancel", false, customButtonStyle);
-                confirmDialog.show(stage);
+                yesBtn.addListener(new ClickListener() {
+                    @Override
+                    public void clicked(InputEvent event, float x, float y) {
+                        SFXManager.play("sound/sound_effect/clickbutton.mp3", game.getSfxVolume());
+
+                        // 1. Hapus data & reset progress
+                        SaveManager.deleteSave();
+                        game.getPlayer().resetProgress();
+                        closeDialog.run();
+
+                        // 2. Tampilkan Toast pemberitahuan selama 3 detik
+                        Toast.show(stage, "Progress berhasil di-reset!\nMemuat ulang dalam 3 detik...", 3.0f);
+
+                        // 3. Tunda eksekusi game.create() selama 3 detik di background thread LibGDX
+                        stage.getRoot().addAction(Actions.sequence(
+                            Actions.delay(3.0f),
+                            Actions.run(new Runnable() {
+                                @Override
+                                public void run() {
+                                    game.create();
+                                }
+                            })
+                        ));
+                    }
+                });
+
+                // 8. Tampilkan dengan Fade In
+                blocker.getColor().a = 0f;
+                stack.getColor().a = 0f;
+                stage.addActor(blocker);
+                stage.addActor(stack);
+
+                blocker.addAction(Actions.fadeIn(0.2f));
+                stack.addAction(Actions.fadeIn(0.2f));
             }
         });
 
         backButton.addListener(new ClickListener() {
             @Override
             public void clicked(InputEvent event, float x, float y) {
+                SFXManager.play("sound/sound_effect/clickbutton.mp3", game.getSfxVolume());
                 game.saveProgress();
                 game.setScreen(new MainMenuScreen(game));
             }

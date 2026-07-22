@@ -21,6 +21,7 @@ public class SaveManager {
 
     public static void save(Player player, float musicVolume, float sfxVolume, BattleSpeed battleSpeed) {
         SaveData data = new SaveData();
+        data.playerName = player.getName();
         data.gold = player.getGold();
         data.musicVolume = musicVolume;
         data.sfxVolume = sfxVolume;
