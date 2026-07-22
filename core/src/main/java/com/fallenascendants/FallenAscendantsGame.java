@@ -19,7 +19,7 @@ public class FallenAscendantsGame extends Game {
 
     @Override
     public void create() {
-        player = new Player("Reyzz"); // Atau ambil dari input nama jika ada fitur buat nama
+        player = new Player("");
 
         SaveData saveData = SaveManager.load();
         if (saveData != null) {
@@ -34,8 +34,8 @@ public class FallenAscendantsGame extends Game {
             // ==========================================
             // PEMAIN BARU (Starter Pack)
             // ==========================================
-            // Berikan 3 kartu acak dengan Rarity COMMON
-            for (int i = 0; i < 3; i++) {
+            // Berikan 2 kartu acak dengan Rarity COMMON
+            for (int i = 0; i < 2; i++) {
                 Card randomCard = CardDatabase.getRandomCardByRarity(Rarity.COMMON);
 
                 // Tambahkan ke koleksi
@@ -44,6 +44,15 @@ public class FallenAscendantsGame extends Game {
                 // Tambahkan ke deck secara otomatis
                 player.getDeck().addCard(randomCard);
             }
+
+            // Berikan 1 kartu acak dengan Rarity RARE
+            Card randomCard = CardDatabase.getRandomCardByRarity(Rarity.RARE);
+
+            // Tambahkan ke koleksi
+            player.addCardToCollection(randomCard);
+
+            // Tambahkan ke deck secara otomatis
+            player.getDeck().addCard(randomCard);
 
             // Langsung save agar file JSON terbentuk dengan 3 kartu ini
             saveProgress();

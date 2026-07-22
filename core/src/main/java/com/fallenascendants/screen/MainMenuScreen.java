@@ -198,7 +198,7 @@ public class MainMenuScreen implements Screen {
         settingsButton.addListener(new ClickListener() {
             @Override
             public void clicked(InputEvent event, float x, float y) {
-                MusicManager.stop();
+//                MusicManager.stop();
                 game.setScreen(new SettingsScreen(game));
             }
         });

@@ -1,5 +1,5 @@
 {
-"gold": 220,
+"gold": 3380,
 "collection": [
 	{
 		"cardId": "thorngate_sentinel",
@@ -9,18 +9,144 @@
 	{
 		"cardId": "scalebinder",
 		"level": 1,
-		"copies": 1
+		"copies": 4
 	},
 	{
 		"cardId": "ironscale_guardian",
 		"level": 1,
 		"copies": 1
+	},
+	{
+		"cardId": "the_nullborn",
+		"level": 1,
+		"copies": 1
+	},
+	{
+		"cardId": "mournveil",
+		"level": 1,
+		"copies": 1
+	},
+	{
+		"cardId": "the_last_congregation",
+		"level": 1,
+		"copies": 1
+	},
+	{
+		"cardId": "celestial_dragon_undone",
+		"level": 1,
+		"copies": 2
+	},
+	{
+		"cardId": "vagrant_blade",
+		"level": 1,
+		"copies": 2
+	},
+	{
+		"cardId": "ashscale_bulwark",
+		"level": 1,
+		"copies": 1
+	},
+	{
+		"cardId": "hollow_grunt",
+		"level": 1,
+		"copies": 1
+	},
+	{
+		"cardId": "shadow_initiate",
+		"level": 1,
+		"copies": 1
+	},
+	{
+		"cardId": "nightshade_binder",
+		"level": 1,
+		"copies": 1
+	},
+	{
+		"cardId": "stormscale",
+		"level": 1,
+		"copies": 2
+	},
+	{
+		"cardId": "warbrand_mender",
+		"level": 1,
+		"copies": 2
+	},
+	{
+		"cardId": "flame_wyrm",
+		"level": 1,
+		"copies": 1
+	},
+	{
+		"cardId": "void_paladin",
+		"level": 1,
+		"copies": 1
+	},
+	{
+		"cardId": "rift_spark",
+		"level": 1,
+		"copies": 2
+	},
+	{
+		"cardId": "shattered_void_knight",
+		"level": 1,
+		"copies": 1
+	},
+	{
+		"cardId": "vael_the_uncrowned",
+		"level": 1,
+		"copies": 1
+	},
+	{
+		"cardId": "abyssal_hulk",
+		"level": 1,
+		"copies": 1
+	},
+	{
+		"cardId": "runebound_seeker",
+		"level": 1,
+		"copies": 1
+	},
+	{
+		"cardId": "doom_reader",
+		"level": 1,
+		"copies": 1
+	},
+	{
+		"cardId": "fallen_wyrm",
+		"level": 1,
+		"copies": 1
+	},
+	{
+		"cardId": "sacred_outlaw",
+		"level": 1,
+		"copies": 1
+	},
+	{
+		"cardId": "stolen_grace",
+		"level": 1,
+		"copies": 2
+	},
+	{
+		"cardId": "void_bishop",
+		"level": 1,
+		"copies": 1
+	},
+	{
+		"cardId": "deepborn_acolyte",
+		"level": 1,
+		"copies": 1
+	},
+	{
+		"cardId": "veilsworn",
+		"level": 1,
+		"copies": 1
 	}
 ],
 "deckCardIds": [
-	"thorngate_sentinel",
-	"scalebinder",
-	"ironscale_guardian"
+	"mournveil",
+	"the_last_congregation",
+	"celestial_dragon_undone",
+	"the_nullborn"
 ],
 "battleSpeed": "INSTANT"
 }

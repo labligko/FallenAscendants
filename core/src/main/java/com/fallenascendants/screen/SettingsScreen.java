@@ -24,6 +24,8 @@ import com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable;
 import com.badlogic.gdx.utils.Align;
 import com.badlogic.gdx.utils.viewport.FitViewport;
 import com.fallenascendants.FallenAscendantsGame;
+import com.fallenascendants.audio.MusicManager;
+import com.fallenascendants.audio.SFXManager;
 import com.fallenascendants.enumtype.BattleSpeed;
 import com.fallenascendants.save.SaveManager;
 
@@ -244,7 +246,7 @@ public class SettingsScreen implements Screen {
             }
         });
 
-        // Logic SFX Music
+        // 1. ChangeListener: Khusus update volume & cover ubah nilai tanpa drag (misal via button / klik instan)
         sfxSlider.setValue(game.getSfxVolume());
         sfxSlider.addListener(new ChangeListener() {
             @Override
@@ -252,6 +254,23 @@ public class SettingsScreen implements Screen {
                 float val = sfxSlider.getValue();
                 game.setSfxVolume(val);
                 sfxPercLabel.setText(Math.round(val * 100) + "%");
+
+                // HANYA play sound di sini kalau slider BUKAN lagi di-drag
+                // (contoh: nilainya diubah lewat kodingan / tombol step + - / keyboard)
+                if (!sfxSlider.isDragging()) {
+                    SFXManager.play("sound/sound_effect/sard_slap.wav", val);
+                }
+            }
+        });
+
+// 2. ClickListener: Khusus play sound 1x saat selesainya aksi drag (lepas mouse/touch)
+        sfxSlider.addListener(new ClickListener() {
+            @Override
+            public void touchUp(InputEvent event, float x, float y, int pointer, int button) {
+                super.touchUp(event, x, y, pointer, button);
+
+                // Play SFX preview tepat saat user melepas geseran slider
+                SFXManager.play("sound/sound_effect/sard_slap.wav", sfxSlider.getValue());
             }
         });
 
