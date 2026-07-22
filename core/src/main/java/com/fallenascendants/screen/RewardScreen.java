@@ -23,6 +23,9 @@ import com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable;
 import com.badlogic.gdx.utils.Align;
 import com.badlogic.gdx.utils.viewport.FitViewport;
 import com.badlogic.gdx.math.Interpolation;
+import com.badlogic.gdx.graphics.Pixmap;
+import com.badlogic.gdx.scenes.scene2d.Touchable;
+import com.badlogic.gdx.scenes.scene2d.ui.Stack;
 import com.fallenascendants.FallenAscendantsGame;
 import com.fallenascendants.audio.MusicManager;
 import com.fallenascendants.audio.SFXManager;
@@ -62,6 +65,8 @@ public class RewardScreen implements Screen {
     private boolean rewardClaimed = false;
     private TextButton continueButton;
 
+    private Texture solidPixelTexture;
+
     public RewardScreen(FallenAscendantsGame game, ProgressionManager.BattleRewards rewards) {
         this.game = game;
         this.rewards = rewards;
@@ -85,7 +90,8 @@ public class RewardScreen implements Screen {
         backgroundImage.setSize(1280, 780);
         stage.addActor(backgroundImage);
 
-        rewardPanelTexture = new Texture(Gdx.files.internal("Panel/RewardPanel.png"));
+        String panelPath = rewards.isWin() ? "Panel/RewardPanel.png" : "Panel/SpecialPanel.png";
+        rewardPanelTexture = new Texture(Gdx.files.internal(panelPath));
         rewardPanelTexture.setFilter(Texture.TextureFilter.Linear, Texture.TextureFilter.Linear);
         backFrameCardTexture = new Texture(Gdx.files.internal("card_frames/backFrameCard.png"));
         backFrameCardTexture.setFilter(Texture.TextureFilter.Linear, Texture.TextureFilter.Linear);
@@ -176,8 +182,8 @@ public class RewardScreen implements Screen {
 
                 Container<com.badlogic.gdx.scenes.scene2d.Actor> container = new Container<>(backImage);
                 container.setTransform(true);
-                container.setOrigin(Align.center);
                 container.size(CARD_WIDTH, CARD_HEIGHT);
+                container.setOrigin(CARD_WIDTH / 2f, CARD_HEIGHT / 2f);
                 cardContainers[i] = container;
 
                 container.addListener(new ClickListener() {
@@ -241,8 +247,23 @@ public class RewardScreen implements Screen {
             other.setTouchable(com.badlogic.gdx.scenes.scene2d.Touchable.disabled);
         }
 
-        Texture frame = getFrameByRarity(claimed.getRarity());
-        CardActor revealedCardActor = new CardActor(claimed, skin, true, cardLabelStyle, frame);
+        flipContainerToCard(container, claimed, 0f);
+        pulseChosenCard(container);
+
+        // Kartu pilihan dikasih napas dulu sebelum sisanya ikut ke-reveal satu-satu,
+        List<Card> options = rewards.getCardOptions();
+        float delay = 0.9f;
+        for (int i = 0; i < cardContainers.length; i++) {
+            if (i == optionIndex) {
+                continue;
+            }
+            flipContainerToCard(cardContainers[i], options.get(i), delay);
+        }
+    }
+
+    private void flipContainerToCard(Container<com.badlogic.gdx.scenes.scene2d.Actor> container, Card card, float startDelay) {
+        Texture frame = getFrameByRarity(card.getRarity());
+        CardActor revealedCardActor = new CardActor(card, skin, true, cardLabelStyle, frame);
 
         // Menyembunyikan Label (Nama & Level) beserta latar hitam transparannya
         revealedCardActor.setLabelsVisible(false);
@@ -250,14 +271,36 @@ public class RewardScreen implements Screen {
         createdCardActors.add(revealedCardActor);
 
         container.addAction(Actions.sequence(
+            Actions.delay(startDelay),
             Actions.scaleTo(0f, 1f, 0.15f, Interpolation.pow2In),
             Actions.run(() -> {
-                // Mainkan sound effect persis ketika kartu di tengah animasi balik (skala X = 0)
                 SFXManager.play("sound/sound_effect/flip.mp3");
                 container.setActor(revealedCardActor);
             }),
             Actions.scaleTo(1f, 1f, 0.15f, Interpolation.pow2Out)
         ));
+    }
+
+    // Kartu pilihan "napas" pelan abis flip kelar (0.3s = 0.15+0.15 durasi flip),
+    private void pulseChosenCard(Container<com.badlogic.gdx.scenes.scene2d.Actor> container) {
+        container.addAction(Actions.sequence(
+            Actions.delay(0.35f),
+            Actions.forever(Actions.sequence(
+                Actions.scaleTo(1.06f, 1.06f, 0.5f, Interpolation.sine),
+                Actions.scaleTo(1f, 1f, 0.5f, Interpolation.sine)
+            ))
+        ));
+    }
+
+    private Texture getSolidPixelTexture() {
+        if (solidPixelTexture == null) {
+            Pixmap pixmap = new Pixmap(1, 1, Pixmap.Format.RGBA8888);
+            pixmap.setColor(1f, 1f, 1f, 1f);
+            pixmap.fill();
+            solidPixelTexture = new Texture(pixmap);
+            pixmap.dispose();
+        }
+        return solidPixelTexture;
     }
 
     private Texture getFrameByRarity(Rarity rarity) {
@@ -319,6 +362,7 @@ public class RewardScreen implements Screen {
         if (buttonPressed != null) buttonPressed.dispose();
         if (titleFont != null) titleFont.dispose();
         if (uiFont != null) uiFont.dispose();
+        if (solidPixelTexture != null) solidPixelTexture.dispose();
 
         for (CardActor actor : createdCardActors) {
             actor.dispose();

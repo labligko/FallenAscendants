@@ -6,6 +6,7 @@ import com.badlogic.gdx.audio.Music;
 public class MusicManager {
 
     private static Music currentMusic;
+    private static String currentPath;
     private static float volume = 0.6f;
 
     /** Overload lama tetep ada, biar pemanggilan yang belum sempet diupdate gak error compile — pakai volume terakhir yang di-set. */
@@ -14,11 +15,18 @@ public class MusicManager {
     }
 
     public static void play(String path, boolean looping, float initialVolume) {
+        if (currentMusic != null && path.equals(currentPath) && currentMusic.isPlaying()) {
+            volume = initialVolume;
+            currentMusic.setVolume(volume);
+            return;
+        }
+
         if (currentMusic != null) {
             currentMusic.stop();
             currentMusic.dispose();
         }
 
+        currentPath = path;
         volume = initialVolume;
         currentMusic = Gdx.audio.newMusic(Gdx.files.internal(path));
         currentMusic.setLooping(looping);
@@ -44,6 +52,7 @@ public class MusicManager {
             currentMusic.dispose();
             currentMusic = null;
         }
+        currentPath = null;
     }
 
     /** Dipanggil dari SettingsScreen tiap slider volume digeser, biar musik yang LAGI JALAN ikut berubah live. */

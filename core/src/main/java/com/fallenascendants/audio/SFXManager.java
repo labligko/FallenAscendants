@@ -10,7 +10,7 @@ public class SFXManager {
 
     // Cache untuk menyimpan efek suara agar file tidak dibaca berulang-ulang dari disk
     private static final Map<String, Sound> soundCache = new HashMap<>();
-    private static float globalVolume = 0.6f;
+    private static float globalVolume = 0.3f;
 
     public static void play(String path) {
         play(path, 1.0f); // 1.0f artinya 100% dari volume global SFX

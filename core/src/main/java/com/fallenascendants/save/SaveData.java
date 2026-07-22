@@ -5,6 +5,8 @@ import java.util.ArrayList;
 
 public class SaveData {
 
+    public String playerName;
+
     public static class CardEntry {
         public String cardId;
         public int level;

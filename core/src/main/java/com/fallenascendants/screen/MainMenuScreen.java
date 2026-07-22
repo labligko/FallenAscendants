@@ -1,7 +1,9 @@
 package com.fallenascendants.screen;
 
+import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.ui.*;
 import com.fallenascendants.audio.MusicManager;
+import com.fallenascendants.audio.SFXManager;
 import com.fallenascendants.screen.card.CollectionScreen;
 import com.fallenascendants.screen.deck.DeckBuilderScreen;
 
@@ -146,6 +148,16 @@ public class MainMenuScreen implements Screen {
         TextButton[] allButtons = { playButton, collectionButton, deckButton, settingsButton, exitButton };
         for (TextButton btn : allButtons) {
             btn.getLabelCell().padTop(-1 * scale);
+
+            btn.addListener(new InputListener() {
+                @Override
+                public void enter(InputEvent event, float x, float y, int pointer, Actor fromActor) {
+                    // pointer == -1 artinya kursor mouse masuk (bukan hasil drag)
+                    if (pointer == -1) {
+                        SFXManager.play("sound/sound_effect/hoverbutton.mp3", game.getSfxVolume());
+                    }
+                }
+            });
         }
 
         // REKAYASA TOTAL STRUKTUR LAYOUT GRID 1280x720
@@ -169,6 +181,7 @@ public class MainMenuScreen implements Screen {
         playButton.addListener(new ClickListener() {
             @Override
             public void clicked(InputEvent event, float x, float y) {
+                SFXManager.play("sound/sound_effect/clickbutton.mp3", game.getSfxVolume());
                 if (!game.getPlayer().getDeck().isValidForBattle()) {
                     Toast.show(stage, "Deck Not Found!.", 1f);
                     return;
@@ -182,6 +195,7 @@ public class MainMenuScreen implements Screen {
         collectionButton.addListener(new ClickListener() {
             @Override
             public void clicked(InputEvent event, float x, float y) {
+                SFXManager.play("sound/sound_effect/clickbutton.mp3", game.getSfxVolume());
                 MusicManager.stop();
                 game.setScreen(new CollectionScreen(game));
             }
@@ -190,6 +204,7 @@ public class MainMenuScreen implements Screen {
         deckButton.addListener(new ClickListener() {
             @Override
             public void clicked(InputEvent event, float x, float y) {
+                SFXManager.play("sound/sound_effect/clickbutton.mp3", game.getSfxVolume());
                 MusicManager.stop();
                 game.setScreen(new DeckBuilderScreen(game));
             }
@@ -198,7 +213,7 @@ public class MainMenuScreen implements Screen {
         settingsButton.addListener(new ClickListener() {
             @Override
             public void clicked(InputEvent event, float x, float y) {
-                MusicManager.stop();
+                SFXManager.play("sound/sound_effect/clickbutton.mp3", game.getSfxVolume());
                 game.setScreen(new SettingsScreen(game));
             }
         });
@@ -206,6 +221,7 @@ public class MainMenuScreen implements Screen {
         exitButton.addListener(new ClickListener() {
             @Override
             public void clicked(InputEvent event, float x, float y) {
+                SFXManager.play("sound/sound_effect/clickbutton.mp3", game.getSfxVolume());
                 game.saveProgress();
                 MusicManager.stop();
                 Gdx.app.exit();
