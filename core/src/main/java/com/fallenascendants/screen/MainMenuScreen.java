@@ -34,9 +34,13 @@ public class MainMenuScreen implements Screen {
 
     private Table mainTable;
     private Table footerTable;
+    private Table headerTable;
+
     private Texture logoTexture;
     private Image logoImage;
     private Label blinkLabel;
+    private Label playerNameLabel;
+    private Label playerGoldLabel;
 
     private Texture buttonNormal;
     private Texture buttonHover;
@@ -91,6 +95,11 @@ public class MainMenuScreen implements Screen {
         // Naikkan padding bottom footer agar teks panduan F11 tidak terlalu mepet lantai bawah monitor
         footerTable.bottom().padBottom(25);
         stage.addActor(footerTable);
+
+        headerTable = new Table();
+        headerTable.setFillParent(true);
+        headerTable.top().left(); // Rata atas-kiri
+        stage.addActor(headerTable);
     }
 
     private void rebuildUI(int width, int height) {
@@ -125,6 +134,7 @@ public class MainMenuScreen implements Screen {
 
         mainTable.clearChildren();
         footerTable.clearChildren();
+        headerTable.clearChildren();
 
         TextButton.TextButtonStyle buttonStyle = new TextButton.TextButtonStyle();
         buttonStyle.up = new com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable(buttonNormal);
@@ -159,6 +169,16 @@ public class MainMenuScreen implements Screen {
                 }
             });
         }
+
+        Label.LabelStyle nameStyle = new Label.LabelStyle(buttonFont, new Color(0.9f, 0.8f, 0.6f, 1f));
+        String playerName = game.getPlayer().getName();
+        if (playerName == null || playerName.isEmpty()) {
+            playerName = "Unknown";
+        }
+        playerNameLabel = new Label("Player: " + playerName, nameStyle);
+        playerGoldLabel = new Label("Gold: " + game.getPlayer().getGold(), nameStyle);
+        headerTable.add(playerNameLabel).padTop(15).padLeft(20).left().row();
+        headerTable.add(playerGoldLabel).padTop(0).padLeft(20).left().row();
 
         // REKAYASA TOTAL STRUKTUR LAYOUT GRID 1280x720
         // Logo diturunkan ke posisi tengah atas ideal (padTop: 40) dan jarak bottom dinormalisasi (padBottom: -30)
