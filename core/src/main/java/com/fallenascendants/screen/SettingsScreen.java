@@ -447,6 +447,7 @@ public class SettingsScreen implements Screen {
                             Actions.run(new Runnable() {
                                 @Override
                                 public void run() {
+                                    game.resetSettingsToDefault();
                                     game.create();
                                 }
                             })
