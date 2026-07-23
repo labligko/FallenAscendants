@@ -1,6 +1,6 @@
 {
 "playerName": "Ascendant",
-"gold": 720,
+"gold": 3880,
 "collection": [
 	{
 		"cardId": "warbrand_mender",
@@ -10,17 +10,17 @@
 	{
 		"cardId": "ironscale_guardian",
 		"level": 1,
-		"copies": 1
+		"copies": 3
 	},
 	{
 		"cardId": "stormrider",
 		"level": 1,
-		"copies": 1
+		"copies": 3
 	},
 	{
 		"cardId": "smokeveil",
 		"level": 1,
-		"copies": 1
+		"copies": 2
 	},
 	{
 		"cardId": "wyvern_hatchling",
@@ -46,16 +46,98 @@
 		"cardId": "fallen_seraph",
 		"level": 1,
 		"copies": 1
+	},
+	{
+		"cardId": "veilsworn",
+		"level": 1,
+		"copies": 1
+	},
+	{
+		"cardId": "mournveil",
+		"level": 1,
+		"copies": 1
+	},
+	{
+		"cardId": "runebound_seeker",
+		"level": 1,
+		"copies": 1
+	},
+	{
+		"cardId": "stolen_grace",
+		"level": 1,
+		"copies": 1
+	},
+	{
+		"cardId": "oathbreaker_knight",
+		"level": 1,
+		"copies": 2
+	},
+	{
+		"cardId": "eclipse",
+		"level": 1,
+		"copies": 2
+	},
+	{
+		"cardId": "scalebinder",
+		"level": 1,
+		"copies": 1
+	},
+	{
+		"cardId": "doom_reader",
+		"level": 1,
+		"copies": 2
+	},
+	{
+		"cardId": "sacred_outlaw",
+		"level": 1,
+		"copies": 1
+	},
+	{
+		"cardId": "abyss_priest",
+		"level": 1,
+		"copies": 1
+	},
+	{
+		"cardId": "sunken_vessel",
+		"level": 1,
+		"copies": 1
+	},
+	{
+		"cardId": "ascended_champion",
+		"level": 1,
+		"copies": 1
+	},
+	{
+		"cardId": "shade_binder",
+		"level": 1,
+		"copies": 2
+	},
+	{
+		"cardId": "wretchwarden",
+		"level": 1,
+		"copies": 1
+	},
+	{
+		"cardId": "hollow_grunt",
+		"level": 1,
+		"copies": 1
+	},
+	{
+		"cardId": "flame_wyrm",
+		"level": 1,
+		"copies": 2
 	}
 ],
 "deckCardIds": [
+	"mournveil",
+	"eclipse",
+	"stolen_grace",
+	"ascended_champion",
 	"fallen_wyrm",
-	"ironscale_guardian",
+	"vael_the_uncrowned",
 	"stormrider",
-	"wyvern_hatchling",
-	"warbrand_mender",
-	"dusk_cutthroat",
-	"smokeveil"
+	"oathbreaker_knight"
 ],
+"musicVolume": 0.03,
 "battleSpeed": "INSTANT"
 }
