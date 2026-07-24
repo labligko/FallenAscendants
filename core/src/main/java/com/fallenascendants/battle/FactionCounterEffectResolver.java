@@ -40,10 +40,6 @@ public class FactionCounterEffectResolver {
             return "";
         }
 
-        if (effectType == CounterEffectType.BONUS_DAMAGE) {
-            return "";
-        }
-
         StringBuilder log = new StringBuilder();
 
         log.append("Faction Counter Effect: ")
@@ -57,58 +53,49 @@ public class FactionCounterEffectResolver {
                 return resolveHealLowestAlly(log, allyField);
 
             case POISON_TARGET:
-                target.addStatusEffect(new StatusEffect(
-                    StatusType.POISON,
-                    4,
-                    1
-                ));
-
-                log.append(target.getName())
-                    .append(" receives POISON for 1 turn(s).\n");
-
+                target.addStatusEffect(new StatusEffect(StatusType.POISON, 4, 1));
+                log.append(target.getName()).append(" receives POISON for 1 turn(s).\n");
                 return log.toString();
 
             case STUN_TARGET_CHANCE:
                 int chance = random.nextInt(100) + 1;
-
                 if (chance <= 25) {
-                    target.addStatusEffect(new StatusEffect(
-                        StatusType.STUN,
-                        0,
-                        1
-                    ));
-
-                    log.append(target.getName())
-                        .append(" receives STUN for 1 turn(s).\n");
+                    target.addStatusEffect(new StatusEffect(StatusType.STUN, 0, 1));
+                    log.append(target.getName()).append(" receives STUN for 1 turn(s).\n");
                 } else {
                     log.append("Stun attempt failed.\n");
                 }
-
                 return log.toString();
 
             case BURN_TARGET:
-                target.addStatusEffect(new StatusEffect(
-                    StatusType.BURN,
-                    6,
-                    1
-                ));
-
-                log.append(target.getName())
-                    .append(" receives BURN for 1 turn(s).\n");
-
+                target.addStatusEffect(new StatusEffect(StatusType.BURN, 6, 1));
+                log.append(target.getName()).append(" receives BURN for 1 turn(s).\n");
                 return log.toString();
 
             case SLOW_TARGET:
-                target.addStatusEffect(new StatusEffect(
-                    StatusType.SLOW,
-                    12,
-                    1
-                ));
+                target.addStatusEffect(new StatusEffect(StatusType.SLOW, 12, 1));
+                log.append(target.getName()).append(" receives SLOW for 1 turn(s).\n");
+                return log.toString();
+
+            case BONUS_DAMAGE: {
+                // Bonus-nya dihitung dari hpDamage yang BARU AJA kena (bukan attacker.getAtk(),
+                // karena resolver ini gak nerima Card attacker dgn ATK mentah -- hpDamage udah
+                // final abis lewat DamageCalculator, jadi ini basisnya paling akurat).
+                int bonusDamage = Math.max(1, hpDamage / 4);
+                target.takeDamage(bonusDamage);
 
                 log.append(target.getName())
-                    .append(" receives SLOW for 1 turn(s).\n");
-
+                    .append(" takes an extra ")
+                    .append(bonusDamage)
+                    .append(" bonus damage!\n")
+                    .append(target.getName())
+                    .append(" HP: ")
+                    .append(target.getCurrentHp())
+                    .append("/")
+                    .append(target.getMaxHp())
+                    .append("\n");
                 return log.toString();
+            }
 
             default:
                 return "";
