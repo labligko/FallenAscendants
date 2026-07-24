@@ -253,11 +253,17 @@ public class Card {
         return def;
     }
 
-    public int getBaseAtk() {return baseAtk;}
+    public int getBaseAtk() {
+        return baseAtk;
+    }
 
-    public int getBaseDef() {return baseDef;}
+    public int getBaseDef() {
+        return baseDef;
+    }
 
-    public int getSpd() {return spd;}
+    public int getSpd() {
+        return spd;
+    }
 
     public int getAggro() {
         return aggro;

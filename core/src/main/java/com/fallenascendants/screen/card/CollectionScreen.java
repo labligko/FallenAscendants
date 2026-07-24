@@ -155,22 +155,41 @@ public class CollectionScreen implements Screen {
         FreeTypeFontGenerator generator = new FreeTypeFontGenerator(Gdx.files.internal("fonts/CinzelDecorative-Regular.ttf"));
         FreeTypeFontGenerator.FreeTypeFontParameter parameter = new FreeTypeFontGenerator.FreeTypeFontParameter();
 
-        parameter.size = Math.round(36 * scale);
+        // CARD ALBUM COLLECTION TITLE FONT
+        parameter.size = 36;
         parameter.color = new Color(0.9f, 0.8f, 0.6f, 1f);
-        parameter.borderWidth = 2 * scale;
+        parameter.borderWidth = 2f;
         parameter.borderColor = Color.BLACK;
+
+        parameter.minFilter = Texture.TextureFilter.Linear;
+        parameter.magFilter = Texture.TextureFilter.Linear;
         titleFont = generator.generateFont(parameter);
 
         // Racik Font Teks Info Kartu
-        parameter.size = Math.round(13 * scale);
+        parameter.size = 28;
         parameter.color = Color.WHITE;
-        parameter.borderWidth = 1 * scale;
+
+        parameter.borderWidth = 1.5f ;
         parameter.borderColor = Color.BLACK;
+
+        parameter.shadowOffsetX = 1;
+        parameter.shadowOffsetY = 1;
+        parameter.shadowColor = new Color(0f, 0f, 0f, 0.9f); // Bayangan hitam halus
+
+        parameter.minFilter = Texture.TextureFilter.Linear;
+        parameter.magFilter = Texture.TextureFilter.Linear;
+
         cardFont = generator.generateFont(parameter);
+
         generator.dispose();
 
-        titleFont.getData().setScale(1f / scale);
-        cardFont.getData().setScale(1f / scale);
+        // 2. KUNCI TEKSTUR FILTER KE LINEAR (Cegah buram saat ditarik/dikecilkan Viewport)
+        titleFont.getRegion().getTexture().setFilter(Texture.TextureFilter.Linear, Texture.TextureFilter.Linear);
+        cardFont.getRegion().getTexture().setFilter(Texture.TextureFilter.Linear, Texture.TextureFilter.Linear);
+
+        //kunci tetap hd tanpa menjadi kebesaran ukurannya
+        cardFont.getRegion().getTexture().setFilter(Texture.TextureFilter.Linear, Texture.TextureFilter.Linear);
+        cardFont.getData().setScale(0.5f);
 
         Label.LabelStyle titleStyle = new Label.LabelStyle(titleFont, Color.WHITE);
         cardLabelStyle = new Label.LabelStyle(cardFont, Color.WHITE);
