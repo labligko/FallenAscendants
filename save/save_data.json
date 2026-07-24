@@ -1,6 +1,6 @@
 {
 "playerName": "ash",
-"gold": 2240,
+"gold": 2340,
 "collection": [
 	{
 		"cardId": "scalebinder",
@@ -109,6 +109,11 @@
 	},
 	{
 		"cardId": "thorngate_sentinel",
+		"level": 1,
+		"copies": 1
+	},
+	{
+		"cardId": "runebound_seeker",
 		"level": 1,
 		"copies": 1
 	}

@@ -9,11 +9,13 @@ import com.badlogic.gdx.graphics.Pixmap;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.freetype.FreeTypeFontGenerator;
+import com.badlogic.gdx.math.Interpolation;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.InputListener;
 import com.badlogic.gdx.scenes.scene2d.Stage;
+import com.badlogic.gdx.scenes.scene2d.actions.Actions;
 import com.badlogic.gdx.scenes.scene2d.ui.Image;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
@@ -78,27 +80,21 @@ public class PreBattleScreen implements Screen {
         Gdx.input.setInputProcessor(stage);
         skin = new Skin(Gdx.files.internal("ui/uiskin.json"));
 
-        MusicManager.play("sound/background_music/prebattle_show.mp3", false, game.getMusicVolume());
-
         FullscreenToggle.attach(stage);
 
+        // 1. BACKGROUND
         backgroundTexture = new Texture(Gdx.files.internal("background/background_lobby/BattleBackground.png"));
         backgroundTexture.setFilter(Texture.TextureFilter.Linear, Texture.TextureFilter.Linear);
         Image backgroundImage = new Image(backgroundTexture);
         backgroundImage.setSize(1280, 720);
         stage.addActor(backgroundImage);
 
+        // 2. SETUP TEXTURE PIXEL UNTUK FOG
         Pixmap pixmap = new Pixmap(1, 1, Pixmap.Format.RGBA8888);
         pixmap.setColor(1f, 1f, 1f, 1f);
         pixmap.fill();
         solidPixel = new Texture(pixmap);
         pixmap.dispose();
-
-        Image fogOverlay = new Image(solidPixel);
-        fogOverlay.setSize(1280, 720);
-
-        fogOverlay.setColor(0f, 0f, 0f, 0.55f);
-        stage.addActor(fogOverlay);
 
         tooltipPanelTexture = new Texture(Gdx.files.internal("Panel/LargePanel.png"));
         tooltipPanelTexture.setFilter(Texture.TextureFilter.Linear, Texture.TextureFilter.Linear);
@@ -110,7 +106,6 @@ public class PreBattleScreen implements Screen {
         parameter.minFilter = Texture.TextureFilter.Linear;
         parameter.magFilter = Texture.TextureFilter.Linear;
 
-        // 1. Font Judul Utama ("CONFIRM BATTLE")
         parameter.size = 28;
         parameter.color = new Color(0.9f, 0.8f, 0.6f, 1f);
         parameter.borderWidth = 2;
@@ -118,7 +113,6 @@ public class PreBattleScreen implements Screen {
         titleFont = generator.generateFont(parameter);
         titleFont.getRegion().getTexture().setFilter(Texture.TextureFilter.Linear, Texture.TextureFilter.Linear);
 
-        // 2. Font Sub-Header ("YOUR DECK", "ENEMY DECK")
         parameter.size = 14;
         parameter.color = new Color(0.9f, 0.8f, 0.6f, 1f);
         parameter.borderWidth = 1f;
@@ -126,7 +120,6 @@ public class PreBattleScreen implements Screen {
         headerFont = generator.generateFont(parameter);
         headerFont.getRegion().getTexture().setFilter(Texture.TextureFilter.Linear, Texture.TextureFilter.Linear);
 
-        // 3a. Font Kartu Utama (Base 28px + Downscale 0.5f)
         parameter.size = 28;
         parameter.color = Color.WHITE;
         parameter.borderWidth = 1.5f;
@@ -135,12 +128,10 @@ public class PreBattleScreen implements Screen {
         cardFont.getRegion().getTexture().setFilter(Texture.TextureFilter.Linear, Texture.TextureFilter.Linear);
         cardFont.getData().setScale(0.5f);
 
-        // 3b. Font Kartu Cadangan (Base 28px + Downscale 0.35f Khusus Kartu Kecil)
         reserveCardFont = generator.generateFont(parameter);
         reserveCardFont.getRegion().getTexture().setFilter(Texture.TextureFilter.Linear, Texture.TextureFilter.Linear);
         reserveCardFont.getData().setScale(0.35f);
 
-        // 4. Font Tooltip Stats Hover (Base 14px murni)
         parameter.size = 14;
         parameter.color = Color.WHITE;
         parameter.borderWidth = 1f;
@@ -165,9 +156,12 @@ public class PreBattleScreen implements Screen {
         playerDeck = game.getPlayer().getDeck();
         enemyDeck = DummyBattleFactory.createRandomEnemyDeck(playerDeck.size());
 
+        // 3. SETUP UI UTAMA (KARTU DLL)
         Table root = new Table();
         root.setFillParent(true);
-        stage.addActor(root);
+        // Buat root transparan (tidak terlihat) di awal
+        root.getColor().a = 0f;
+        stage.addActor(root); // Tambahkan root DULUAN agar posisinya di bawah Fog
 
         Label title = new Label("CONFIRM BATTLE", goldTitleStyle);
 
@@ -182,9 +176,72 @@ public class PreBattleScreen implements Screen {
         root.add(arena).padBottom(10).row();
         root.add(hintLabel).padBottom(8).row();
 
+        // 4. SETUP KABUT (FOG) KIRI & KANAN
+        Image leftFog = new Image(solidPixel);
+        leftFog.setSize(640, 720);
+        leftFog.setPosition(0, 0);
+        leftFog.setColor(0f, 0f, 0f, 1f); // Warna hitam pekat
+
+        Image rightFog = new Image(solidPixel);
+        rightFog.setSize(640, 720);
+        rightFog.setPosition(640, 0);
+        rightFog.setColor(0f, 0f, 0f, 1f); // Warna hitam pekat
+
+        stage.addActor(leftFog);
+        stage.addActor(rightFog);
+        
+        // 5. BLOK ANIMASI (FOG REVEAL & FADE IN UI)
+        float startDelay = 0.5f; // Jeda sebelum animasi dimulai
+        float fogDuration = 1.2f; // Durasi kabut membuka (1.2 detik)
+
+        // Animasi Fog Kiri bergeser ke kiri (-640px)
+        leftFog.addAction(Actions.sequence(
+            Actions.delay(startDelay),
+            Actions.parallel(
+                Actions.moveBy(-640, 0, fogDuration, Interpolation.pow2Out),
+                Actions.fadeOut(fogDuration)
+            ),
+            Actions.removeActor()
+        ));
+
+        // Animasi Fog Kanan bergeser ke kanan (+640px)
+        rightFog.addAction(Actions.sequence(
+            Actions.delay(startDelay),
+            Actions.parallel(
+                Actions.moveBy(640, 0, fogDuration, Interpolation.pow2Out),
+                Actions.fadeOut(fogDuration)
+            ),
+            Actions.removeActor()
+        ));
+
+        // Animasi Musik dan Munculnya UI (Kartu)
+        root.addAction(Actions.sequence(
+            Actions.delay(startDelay),
+            Actions.run(new Runnable() {
+                @Override
+                public void run() {
+                    // (Opsional) Putar SFX kabut terbuka jika ada
+                    // SFXManager.play("sound/sound_effect/whoosh.mp3", game.getSfxVolume());
+                }
+            }),
+            Actions.delay(fogDuration * 0.3f), // Tunggu sebentar saat kabut mulai terbuka
+            Actions.run(new Runnable() {
+                @Override
+                public void run() {
+                    // Putar lagu PreBattle
+                    MusicManager.play("sound/background_music/prebattle.mp3", false, game.getMusicVolume());
+                }
+            }),
+            Actions.fadeIn(0.8f) // Fade in kartu pelan-pelan selama 0.8 detik
+        ));
+
+        // 6. SETUP INPUT LISTENER
         stage.addListener(new InputListener() {
             @Override
             public boolean keyDown(InputEvent event, int keycode) {
+                // Cegah spam input saat animasi kartu masih fade-in (masih tersembunyi)
+                if (root.getColor().a < 0.8f) return false;
+
                 if (keycode == Input.Keys.ENTER) {
                     SFXManager.play("sound/sound_effect/clickbutton.mp3", game.getSfxVolume());
                     startBattle();

@@ -57,7 +57,6 @@ public class BattleScreen implements Screen {
     private Texture backFrameCardTexture;
     private final java.util.Map<Card, CardActor> cardActorCache = new java.util.IdentityHashMap<>();
 
-    // DITINGKATKAN: Ukuran Kartu Aktif Di-boost Agar Lebih Besar & Jelas
     private static final int ACTIVE_CARD_WIDTH = 115;
     private static final int ACTIVE_CARD_HEIGHT = 165;
     private static final int SIDE_CARD_WIDTH = 55;
@@ -84,6 +83,17 @@ public class BattleScreen implements Screen {
     private final Card[] enemyDisplayed = new Card[5];
     private final Card[] playerDisplayed = new Card[5];
 
+    private Texture backgroundTexture;
+    private Texture panelTexture;
+    private Texture buttonNormal, buttonHover, buttonPressed;
+    private TextButton.TextButtonStyle customButtonStyle;
+    private Window.WindowStyle customWindowStyle;
+
+    private Image pauseOverlayImage;
+    private Table pauseOverlayContent;
+    private Image resultOverlayImage;
+    private Table resultOverlayContent;
+
     public BattleScreen(FallenAscendantsGame game, BattleManager battleManager) {
         this.game = game;
         this.battleManager = battleManager;
@@ -98,6 +108,25 @@ public class BattleScreen implements Screen {
         skin = new Skin(Gdx.files.internal("ui/uiskin.json"));
         MusicManager.play("sound/background_music/battle_sound.mp3", true, game.getMusicVolume());
 
+        panelTexture = new Texture(Gdx.files.internal("Panel/LargePanel.png"));
+        panelTexture.setFilter(Texture.TextureFilter.Linear, Texture.TextureFilter.Linear);
+
+        backgroundTexture = new Texture(Gdx.files.internal("background/background_lobby/BattleBackground.png"));
+        backgroundTexture.setFilter(Texture.TextureFilter.Linear, Texture.TextureFilter.Linear);
+
+        buttonNormal = new Texture(Gdx.files.internal("Button/PrimaryButton.png"));
+        buttonNormal.setFilter(Texture.TextureFilter.Linear, Texture.TextureFilter.Linear);
+
+        buttonHover = new Texture(Gdx.files.internal("Button/HoverButton.png"));
+        buttonHover.setFilter(Texture.TextureFilter.Linear, Texture.TextureFilter.Linear);
+
+        buttonPressed = new Texture(Gdx.files.internal("Button/PressedButton.png"));
+        buttonPressed.setFilter(Texture.TextureFilter.Linear, Texture.TextureFilter.Linear);
+
+        Image backgroundImage = new Image(new TextureRegionDrawable(backgroundTexture));
+        backgroundImage.setSize(1280, 720);
+        stage.addActor(backgroundImage);
+
         FullscreenToggle.attach(stage);
 
         Pixmap pixmap = new Pixmap(1, 1, Pixmap.Format.RGBA8888);
@@ -106,14 +135,13 @@ public class BattleScreen implements Screen {
         solidPixel = new Texture(pixmap);
         pixmap.dispose();
 
-        // --- MANAJEMEN FONT DENGAN FILTER HD LINEAR & MULTI-DOWNSCALE ---
+        // --- FONT DIGENERATE DULUAN, SEBELUM DIPAKE DI customButtonStyle/customWindowStyle ---
         FreeTypeFontGenerator generator = new FreeTypeFontGenerator(Gdx.files.internal("fonts/CinzelDecorative-Regular.ttf"));
         FreeTypeFontGenerator.FreeTypeFontParameter parameter = new FreeTypeFontGenerator.FreeTypeFontParameter();
 
         parameter.minFilter = Texture.TextureFilter.Linear;
         parameter.magFilter = Texture.TextureFilter.Linear;
 
-        // 1. Title Style ("YOUR TEAM", "ENEMY")
         parameter.size = 26;
         parameter.color = new Color(0.9f, 0.8f, 0.6f, 1f);
         parameter.borderWidth = 2;
@@ -121,7 +149,6 @@ public class BattleScreen implements Screen {
         titleFont = generator.generateFont(parameter);
         titleFont.getRegion().getTexture().setFilter(Texture.TextureFilter.Linear, Texture.TextureFilter.Linear);
 
-        // 2. Header Style ("GRAVE", "RESERVE")
         parameter.size = 12;
         parameter.color = new Color(0.8f, 0.8f, 0.8f, 1f);
         parameter.borderWidth = 1;
@@ -129,7 +156,6 @@ public class BattleScreen implements Screen {
         headerFont = generator.generateFont(parameter);
         headerFont.getRegion().getTexture().setFilter(Texture.TextureFilter.Linear, Texture.TextureFilter.Linear);
 
-        // 3. Card Active Style (Base 28px -> Scale 0.42f disesuaikan dengan kartu 115x165px)
         parameter.size = 28;
         parameter.color = Color.WHITE;
         parameter.borderWidth = 1.5f;
@@ -138,12 +164,10 @@ public class BattleScreen implements Screen {
         cardActiveFont.getRegion().getTexture().setFilter(Texture.TextureFilter.Linear, Texture.TextureFilter.Linear);
         cardActiveFont.getData().setScale(0.42f);
 
-        // 4. Card Side Style (Base 28px -> Scale 0.24f disesuaikan dengan kartu 55x78px)
         cardSideFont = generator.generateFont(parameter);
         cardSideFont.getRegion().getTexture().setFilter(Texture.TextureFilter.Linear, Texture.TextureFilter.Linear);
         cardSideFont.getData().setScale(0.24f);
 
-        // 5. UI General Style (HP, Stats, Controls)
         parameter.size = 13;
         parameter.color = Color.WHITE;
         parameter.borderWidth = 1;
@@ -159,6 +183,22 @@ public class BattleScreen implements Screen {
         cardSideStyle = new Label.LabelStyle(cardSideFont, Color.WHITE);
         uiStyle = new Label.LabelStyle(uiFont, Color.WHITE);
 
+        // Sekarang uiFont & titleFont udah pasti ada isinya -> aman dipake di sini.
+        customButtonStyle = new TextButton.TextButtonStyle();
+        customButtonStyle.up = new TextureRegionDrawable(buttonNormal);
+        customButtonStyle.over = new TextureRegionDrawable(buttonHover);
+        customButtonStyle.down = new TextureRegionDrawable(buttonPressed);
+        customButtonStyle.font = uiFont;
+        customButtonStyle.fontColor = Color.WHITE;
+        customButtonStyle.overFontColor = new Color(0.9f, 0.8f, 0.6f, 1f);
+        customButtonStyle.pressedOffsetX = 1;
+        customButtonStyle.pressedOffsetY = -1;
+
+        customWindowStyle = new Window.WindowStyle();
+        customWindowStyle.background = new TextureRegionDrawable(panelTexture);
+        customWindowStyle.titleFont = titleFont;
+        customWindowStyle.titleFontColor = new Color(0.9f, 0.8f, 0.6f, 1f);
+
         commonFrame = new Texture(Gdx.files.internal("card_frames/commonFrame.png"));
         rareFrame = new Texture(Gdx.files.internal("card_frames/rareFrame.png"));
         epicFrame = new Texture(Gdx.files.internal("card_frames/epicFrame.png"));
@@ -172,8 +212,7 @@ public class BattleScreen implements Screen {
         root.top().padTop(25);
         stage.addActor(root);
 
-        // Tombol Back di Pojok Kiri Atas
-        TextButton backButton = new TextButton("<- Menu", skin);
+        TextButton backButton = new TextButton("← Back", customButtonStyle);
         backButton.setPosition(20, 675);
         backButton.setSize(85, 32);
         backButton.addListener(new ClickListener() {
@@ -184,18 +223,15 @@ public class BattleScreen implements Screen {
         });
         stage.addActor(backButton);
 
-        // Konstruksi Arena Pertempuran (Jarak Dijauhkan Menjadi padBottom(50))
         Table enemyRow = buildBattlefieldRow(false);
         Table playerRow = buildBattlefieldRow(true);
 
-        root.add(enemyRow).padBottom(50).row(); // Gap renggang & dramatis antar kubu
+        root.add(enemyRow).padBottom(50).row();
         root.add(playerRow).row();
 
-        // Inisialisasi Pasif & Sinergi
         battleManager.applyPassiveSkillsAtBattleStart();
         battleManager.applyFactionSynergyAtBattleStart();
 
-        // Panel Turn Order Melayang (Pojok Kanan Atas)
         Table turnOrderPanel = buildTurnOrderPanel();
         turnOrderPanel.pack();
         turnOrderPanel.setPosition(1280 - turnOrderPanel.getWidth() - 20, 720 - turnOrderPanel.getHeight() - 20);
@@ -211,33 +247,72 @@ public class BattleScreen implements Screen {
 
     private void showPauseDialog() {
         if (paused) {
-            paused = false;
-            MusicManager.resume();
-            if (pauseDialog != null) pauseDialog.hide();
+            hidePauseOverlay();
             return;
         }
 
         paused = true;
         MusicManager.pause();
 
-        pauseDialog = new Dialog("PAUSED", skin) {
-            @Override
-            protected void result(Object object) {
-                boolean continueGame = (Boolean) object;
-                if (continueGame) {
-                    paused = false;
-                    MusicManager.resume();
-                } else {
-                    MusicManager.stop();
-                    game.setScreen(new MainMenuScreen(game));
-                }
-            }
-        };
+        float width = 480f;
+        float height = 260f;
+        float x = (1280f - width) / 2f;
+        float y = (720f - height) / 2f;
 
-        pauseDialog.text("Battle is paused.");
-        pauseDialog.button("Continue", true);
-        pauseDialog.button("Main Menu", false);
-        pauseDialog.show(stage);
+        pauseOverlayImage = new Image(new TextureRegionDrawable(panelTexture));
+        pauseOverlayImage.setSize(width, height);
+        pauseOverlayImage.setPosition(x, y);
+        stage.addActor(pauseOverlayImage);
+
+        pauseOverlayContent = new Table();
+        pauseOverlayContent.setSize(width, height);
+        pauseOverlayContent.setPosition(x, y);
+        pauseOverlayContent.pad(60f, 30f, 30f, 30f);
+        stage.addActor(pauseOverlayContent);
+
+        Label pauseTitle = new Label("PAUSED", goldTitleStyle);
+        pauseTitle.setAlignment(Align.center);
+        pauseOverlayContent.add(pauseTitle).padBottom(16).row();
+
+        Label pauseText = new Label("Battle is paused.", uiStyle);
+        pauseText.setAlignment(Align.center);
+        pauseOverlayContent.add(pauseText).padBottom(24).row();
+
+        TextButton continueBtn = new TextButton("Continue", customButtonStyle);
+        TextButton mainMenuBtn = new TextButton("Main Menu", customButtonStyle);
+
+        Table buttonRow = new Table();
+        buttonRow.add(continueBtn).width(160).height(44).padRight(15);
+        buttonRow.add(mainMenuBtn).width(160).height(44);
+        pauseOverlayContent.add(buttonRow);
+
+        continueBtn.addListener(new ClickListener() {
+            @Override
+            public void clicked(InputEvent event, float x, float y) {
+                hidePauseOverlay();
+            }
+        });
+
+        mainMenuBtn.addListener(new ClickListener() {
+            @Override
+            public void clicked(InputEvent event, float x, float y) {
+                MusicManager.stop();
+                game.setScreen(new MainMenuScreen(game));
+            }
+        });
+    }
+
+    private void hidePauseOverlay() {
+        paused = false;
+        MusicManager.resume();
+        if (pauseOverlayImage != null) {
+            pauseOverlayImage.remove();
+            pauseOverlayImage = null;
+        }
+        if (pauseOverlayContent != null) {
+            pauseOverlayContent.remove();
+            pauseOverlayContent = null;
+        }
     }
 
     private Table buildTurnOrderPanel() {
@@ -528,7 +603,7 @@ public class BattleScreen implements Screen {
         if (battleManager.isBattleOver()) return;
 
         java.util.Map<Card, int[]> hpShieldBefore = captureHpShieldSnapshot();
-        battleManager.processSingleAction(); // Langsung proses tanpa log teks
+        battleManager.processSingleAction();
 
         Card animAttacker = battleManager.wasLastActionBasicAttack() ? battleManager.getLastAttacker() : null;
         Card animTarget = battleManager.wasLastActionBasicAttack() ? battleManager.getLastTarget() : null;
@@ -657,18 +732,58 @@ public class BattleScreen implements Screen {
         String title = battleManager.isPlayerWin() ? "VICTORY" : "DEFEAT";
         String message = battleManager.isPlayerWin() ? "You have defeated the enemy." : "Your team has fallen.";
 
-        Dialog dialog = new Dialog(title, skin) {
-            @Override
-            protected void result(Object object) {
-                ProgressionManager.BattleRewards rewards = ProgressionManager.processBattleRewards(game.getPlayer(), battleManager.isPlayerWin());
-                game.setScreen(new RewardScreen(game, rewards));
-            }
+        float width = 480f;
+        float height = 260f;
+        float x = (1280f - width) / 2f;
+        float y = (720f - height) / 2f;
+
+        resultOverlayImage = new Image(new TextureRegionDrawable(panelTexture));
+        resultOverlayImage.setSize(width, height);
+        resultOverlayImage.setPosition(x, y);
+        stage.addActor(resultOverlayImage);
+
+        resultOverlayContent = new Table();
+        resultOverlayContent.setSize(width, height);
+        resultOverlayContent.setPosition(x, y);
+        resultOverlayContent.pad(60f, 30f, 30f, 30f);
+        stage.addActor(resultOverlayContent);
+
+        Label titleLabel = new Label(title, goldTitleStyle);
+        titleLabel.setAlignment(Align.center);
+        resultOverlayContent.add(titleLabel).padBottom(16).row();
+
+        Label messageLabel = new Label(message, uiStyle);
+        messageLabel.setAlignment(Align.center);
+        resultOverlayContent.add(messageLabel).padBottom(24).row();
+
+        TextButton continueBtn = new TextButton("Continue", customButtonStyle);
+        resultOverlayContent.add(continueBtn).width(180).height(48);
+
+        Runnable goToReward = () -> {
+            ProgressionManager.BattleRewards rewards =
+                ProgressionManager.processBattleRewards(game.getPlayer(), battleManager.isPlayerWin());
+            game.setScreen(new RewardScreen(game, rewards));
         };
 
-        dialog.text(message);
-        dialog.button("Continue");
-        dialog.key(Input.Keys.ENTER, true);
-        dialog.show(stage);
+        continueBtn.addListener(new ClickListener() {
+            @Override
+            public void clicked(InputEvent event, float x, float y) {
+                goToReward.run();
+            }
+        });
+
+        // Dialog.key(ENTER, true) dulu otomatis mancing tombol lewat result(true);
+        // sekarang gak ada Dialog lagi, jadi listener key ditaro langsung di stage.
+        stage.addListener(new InputListener() {
+            @Override
+            public boolean keyDown(InputEvent event, int keycode) {
+                if (keycode == Input.Keys.ENTER) {
+                    goToReward.run();
+                    return true;
+                }
+                return false;
+            }
+        });
     }
 
     private String formatSpeedLabel(BattleSpeed speed) {
@@ -782,6 +897,11 @@ public class BattleScreen implements Screen {
         if (specialFrame != null) specialFrame.dispose();
         if (backFrameCardTexture != null) backFrameCardTexture.dispose();
         if (solidPixel != null) solidPixel.dispose();
+        if (backgroundTexture != null) backgroundTexture.dispose();
+        if (panelTexture != null) panelTexture.dispose();
+        if (buttonNormal != null) buttonNormal.dispose();
+        if (buttonHover != null) buttonHover.dispose();
+        if (buttonPressed != null) buttonPressed.dispose();
 
         for (CardActor actor : cardActorCache.values()) {
             actor.dispose();
