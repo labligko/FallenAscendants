@@ -56,6 +56,7 @@ public class BattleScreen implements Screen {
     private Texture commonFrame, rareFrame, epicFrame, legendaryFrame, specialFrame;
     private Texture backFrameCardTexture;
     private final java.util.Map<Card, CardActor> cardActorCache = new java.util.IdentityHashMap<>();
+    private final java.util.Map<Table, Label> hpLabelBySlot = new java.util.IdentityHashMap<>();
 
     private static final int ACTIVE_CARD_WIDTH = 115;
     private static final int ACTIVE_CARD_HEIGHT = 165;
@@ -111,7 +112,7 @@ public class BattleScreen implements Screen {
         panelTexture = new Texture(Gdx.files.internal("Panel/LargePanel.png"));
         panelTexture.setFilter(Texture.TextureFilter.Linear, Texture.TextureFilter.Linear);
 
-        backgroundTexture = new Texture(Gdx.files.internal("background/background_lobby/BattleBackground.png"));
+        backgroundTexture = new Texture(Gdx.files.internal("background/background_lobby/BattleBackgroundBlur.png"));
         backgroundTexture.setFilter(Texture.TextureFilter.Linear, Texture.TextureFilter.Linear);
 
         buttonNormal = new Texture(Gdx.files.internal("Button/PrimaryButton.png"));
@@ -209,7 +210,7 @@ public class BattleScreen implements Screen {
 
         Table root = new Table();
         root.setFillParent(true);
-        root.top().padTop(25);
+        root.center();
         stage.addActor(root);
 
         TextButton backButton = new TextButton("← Back", customButtonStyle);
@@ -226,8 +227,8 @@ public class BattleScreen implements Screen {
         Table enemyRow = buildBattlefieldRow(false);
         Table playerRow = buildBattlefieldRow(true);
 
-        root.add(enemyRow).padBottom(50).row();
-        root.add(playerRow).row();
+        root.add(enemyRow).fillX().padBottom(110).row();
+        root.add(playerRow).fillX().row();
 
         battleManager.applyPassiveSkillsAtBattleStart();
         battleManager.applyFactionSynergyAtBattleStart();
@@ -405,7 +406,10 @@ public class BattleScreen implements Screen {
         Table row = new Table();
 
         Label header = new Label(isPlayerSide ? "YOUR TEAM" : "ENEMY", goldTitleStyle);
-        row.add(header).colspan(3).padBottom(8).row();
+
+        // Deklarasi summaryLabel di atas agar posisinya bisa kita atur secara fleksibel
+        Label summaryLabel = new Label("", uiStyle);
+        summaryLabel.setColor(0.7f, 0.7f, 0.7f, 1f);
 
         Table graveyardColumn = buildSideColumn("GRAVE");
         Table activeRow = new Table();
@@ -422,28 +426,40 @@ public class BattleScreen implements Screen {
         }
 
         if (isPlayerSide) {
+            // === BATTLEFIELD PEMAIN (PLAYER SIDE) ===
+            playerGraveyardColumn = graveyardColumn;
+            playerReserveColumn = reserveColumn;
+            playerSummaryLabel = summaryLabel;
+
+            // 1. Kartu diletakkan paling atas
             row.add(graveyardColumn).width(70).top().padRight(15);
             row.add(activeRow).top();
             row.add(reserveColumn).width(70).top().padLeft(15);
-            playerGraveyardColumn = graveyardColumn;
-            playerReserveColumn = reserveColumn;
+            row.row(); // Wajib dipanggil agar elemen selanjutnya pindah ke bawah kartu
+
+            // 2. Header ("YOUR TEAM") di bawah kartu
+            row.add(header).colspan(3).padTop(10).padBottom(5).row();
+
+            // 3. Summary Label (Jumlah Grave/Reserve) di bawah header
+            row.add(summaryLabel).colspan(3).padBottom(5).row();
+
         } else {
+            // === BATTLEFIELD MUSUH (ENEMY SIDE) ===
+            enemyReserveColumn = reserveColumn;
+            enemyGraveyardColumn = graveyardColumn;
+            enemySummaryLabel = summaryLabel;
+
+            // 1. Header ("ENEMY") diletakkan paling atas
+            row.add(header).colspan(3).padBottom(5).row();
+
+            // 2. Summary Label (Jumlah Grave/Reserve) diletakkan tepat di bawah header
+            row.add(summaryLabel).colspan(3).padBottom(10).row();
+
+            // 3. Kartu diletakkan di bawah summary label
             row.add(reserveColumn).width(70).top().padRight(15);
             row.add(activeRow).top();
             row.add(graveyardColumn).width(70).top().padLeft(15);
-            enemyReserveColumn = reserveColumn;
-            enemyGraveyardColumn = graveyardColumn;
-        }
-        row.row();
-
-        Label summaryLabel = new Label("", uiStyle);
-        summaryLabel.setColor(0.7f, 0.7f, 0.7f, 1f);
-        row.add(summaryLabel).colspan(3).padTop(6);
-
-        if (isPlayerSide) {
-            playerSummaryLabel = summaryLabel;
-        } else {
-            enemySummaryLabel = summaryLabel;
+            row.row();
         }
 
         return row;
@@ -463,12 +479,16 @@ public class BattleScreen implements Screen {
         for (int i = 0; i < 5; i++) {
             if (enemyDisplayed[i] != enemyActive[i]) {
                 enemyDisplayed[i] = enemyActive[i];
-                fillActiveSlot(enemyActiveSlots[i], enemyActive[i]);
+                fillActiveSlot(enemyActiveSlots[i], enemyActive[i], true);
+            } else {
+                updateActiveSlotHp(enemyActiveSlots[i], enemyActive[i]);
             }
 
             if (playerDisplayed[i] != playerActive[i]) {
                 playerDisplayed[i] = playerActive[i];
-                fillActiveSlot(playerActiveSlots[i], playerActive[i]);
+                fillActiveSlot(playerActiveSlots[i], playerActive[i], false);
+            } else {
+                updateActiveSlotHp(playerActiveSlots[i], playerActive[i]);
             }
         }
 
@@ -476,9 +496,24 @@ public class BattleScreen implements Screen {
         fillSideColumn(enemyGraveyardColumn, battleManager.getEnemyField().getGraveyard(), "GRAVE");
         fillSideColumn(playerReserveColumn, battleManager.getPlayerField().getReserveCards(), "RESERVE");
         fillSideColumn(playerGraveyardColumn, battleManager.getPlayerField().getGraveyard(), "GRAVE");
+    }
 
-        enemySummaryLabel.setText("Reserve: " + battleManager.getEnemyField().getReserveCards().size() + "  |  Graveyard: " + battleManager.getEnemyField().getGraveyard().size());
-        playerSummaryLabel.setText("Reserve: " + battleManager.getPlayerField().getReserveCards().size() + "  |  Graveyard: " + battleManager.getPlayerField().getGraveyard().size());
+    private void updateActiveSlotHp(Table slot, Card card) {
+        if (card == null) return;
+
+        Label hpLabel = hpLabelBySlot.get(slot);
+        if (hpLabel == null) return;
+
+        String hpText = card.isDead()
+            ? "[DEFEATED]"
+            : card.getCurrentHp() + "/" + card.getMaxHp() + (card.getShield() > 0 ? " (+" + card.getShield() + ")" : "");
+        hpLabel.setText(hpText);
+        hpLabel.setColor(card.isDead() ? new Color(0.8f, 0.3f, 0.3f, 1f) : Color.WHITE);
+
+        CardActor cardActor = cardActorCache.get(card);
+        if (cardActor != null) {
+            cardActor.getColor().set(card.isDead() ? new Color(0.35f, 0.35f, 0.35f, 1f) : Color.WHITE);
+        }
     }
 
     private CardActor getOrCreateCardActor(Card card, Label.LabelStyle labelStyle) {
@@ -508,8 +543,9 @@ public class BattleScreen implements Screen {
         return cached;
     }
 
-    private void fillActiveSlot(Table slot, Card card) {
+    private void fillActiveSlot(Table slot, Card card , boolean isEnemySide) {
         slot.clear();
+        hpLabelBySlot.remove(slot);
 
         if (card == null) {
             Label empty = new Label("--", uiStyle);
@@ -527,9 +563,15 @@ public class BattleScreen implements Screen {
         Label hpLabel = new Label(hpText, uiStyle);
         hpLabel.setAlignment(Align.center);
         hpLabel.setColor(card.isDead() ? new Color(0.8f, 0.3f, 0.3f, 1f) : Color.WHITE);
+        hpLabelBySlot.put(slot, hpLabel);
 
-        slot.add(cardActor).size(ACTIVE_CARD_WIDTH, ACTIVE_CARD_HEIGHT).row();
-        slot.add(hpLabel).padTop(4);
+        if (isEnemySide) {
+            slot.add(hpLabel).padBottom(4).row();
+            slot.add(cardActor).size(ACTIVE_CARD_WIDTH, ACTIVE_CARD_HEIGHT);
+        } else {
+            slot.add(cardActor).size(ACTIVE_CARD_WIDTH, ACTIVE_CARD_HEIGHT).row();
+            slot.add(hpLabel).padTop(4);
+        }
     }
 
     private static final int MAX_STACK_VISIBLE = 4;

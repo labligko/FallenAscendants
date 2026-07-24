@@ -1,6 +1,6 @@
 {
 "playerName": "ash",
-"gold": 2340,
+"gold": 2840,
 "collection": [
 	{
 		"cardId": "scalebinder",
@@ -20,7 +20,7 @@
 	{
 		"cardId": "unseen_sovereign",
 		"level": 1,
-		"copies": 2
+		"copies": 3
 	},
 	{
 		"cardId": "ember_drake",
@@ -80,7 +80,7 @@
 	{
 		"cardId": "shadow_initiate",
 		"level": 1,
-		"copies": 1
+		"copies": 2
 	},
 	{
 		"cardId": "flame_wyrm",
@@ -110,10 +110,20 @@
 	{
 		"cardId": "thorngate_sentinel",
 		"level": 1,
-		"copies": 1
+		"copies": 2
 	},
 	{
 		"cardId": "runebound_seeker",
+		"level": 1,
+		"copies": 1
+	},
+	{
+		"cardId": "voidborn_hulk",
+		"level": 1,
+		"copies": 1
+	},
+	{
+		"cardId": "oathbreaker_knight",
 		"level": 1,
 		"copies": 1
 	}
