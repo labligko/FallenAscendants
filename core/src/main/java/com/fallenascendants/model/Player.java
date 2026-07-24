@@ -18,7 +18,25 @@ public class Player {
     }
 
     public void addCardToCollection(Card card) {
+        if (card == null) return;
+
+        // 1. Cek apakah kartu sudah ada di koleksi
+        for (Card existingCard : collection) {
+            if (existingCard.getId().equals(card.getId())) {
+                existingCard.addCopies(1); // Kalau sudah ada, cukup tambah 1 lembar
+                return;
+            }
+        }
+
+        // 2. Jika belum ada, masukkan sebagai kartu baru
+        card.setCopies(1);
+        collection.add(card);
+    }
+
+    // Method khusus untuk load data dari JSON (bypass logika "tambah 1")
+    public void loadCardToCollection(Card card, int copies) {
         if (card != null) {
+            card.setCopies(copies);
             collection.add(card);
         }
     }
@@ -37,19 +55,8 @@ public class Player {
         if (amount <= 0 || gold < amount) {
             return false;
         }
-
         gold -= amount;
         return true;
-    }
-
-    public int getDuplicateCount(String cardId, Card excludeCard) {
-        int count = 0;
-        for (Card card : collection) {
-            if (card != excludeCard && card.getId().equals(cardId)) {
-                count++;
-            }
-        }
-        return count;
     }
 
     public boolean upgradeCard(Card targetCard) {
@@ -64,28 +71,15 @@ public class Player {
             return false;
         }
 
-        int availableDuplicates = getDuplicateCount(targetCard.getId(), targetCard);
-        if (availableDuplicates < requiredDuplicates) {
+        // Cek total lembar. Syaratnya: lembar saat ini dikurangi 1 (kartu asli) harus mencukupi untuk bahan bakar.
+        if (targetCard.getCopies() - 1 < requiredDuplicates) {
             return false;
         }
 
-        // Spend gold
+        // Potong gold & potong copies
         spendGold(requiredGold);
+        targetCard.removeCopies(requiredDuplicates);
 
-        // Remove duplicate cards from collection
-        int removedCount = 0;
-        for (int i = collection.size() - 1; i >= 0; i--) {
-            Card card = collection.get(i);
-            if (card != targetCard && card.getId().equals(targetCard.getId())) {
-                collection.remove(i);
-                removedCount++;
-                if (removedCount == requiredDuplicates) {
-                    break;
-                }
-            }
-        }
-
-        // Perform level up
         targetCard.levelUp();
         return true;
     }
@@ -96,9 +90,8 @@ public class Player {
         deck.clear();
     }
 
-    public String getName() {
-        return name;
-    }
+    public String getName() { return name; }
+    public void setName(String name) { this.name = name; }
 
     public int getGold() {
         return gold;

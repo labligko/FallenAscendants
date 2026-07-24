@@ -25,6 +25,7 @@ import com.fallenascendants.model.Player;
 import com.fallenascendants.screen.FullscreenToggle;
 import com.fallenascendants.screen.MainMenuScreen;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class CollectionScreen implements Screen {
@@ -45,7 +46,7 @@ public class CollectionScreen implements Screen {
     private int currentPage = 0;
     private final int CARDS_PER_PAGE = 12;
 
-    // card frame texture asset
+    // Aset tekstur bingkai kartu
     private Texture commonFrame, rareFrame, epicFrame, legendaryFrame, specialFrame;
 
     // Aset tekstur tombol kustom dari MainMenu
@@ -58,6 +59,30 @@ public class CollectionScreen implements Screen {
         this.game = game;
     }
 
+    // =========================================================================
+    // SINKRONISASI KARTU MASTER DENGAN DATA KARTU MILIK PLAYER
+    // =========================================================================
+    private List<Card> getSyncedCards() {
+        List<Card> masterCards = CardDatabase.getAllCards();
+        if (player == null || player.getCollection() == null || masterCards == null) {
+            return masterCards;
+        }
+
+        List<Card> syncedList = new ArrayList<>();
+        for (Card baseCard : masterCards) {
+            Card activeCard = baseCard;
+            // Jika player memiliki kartu ini di koleksinya, pakai objek kartu milik player (Level & Stats Asli)
+            for (Card playerCard : player.getCollection()) {
+                if (playerCard.getId().equals(baseCard.getId())) {
+                    activeCard = playerCard;
+                    break;
+                }
+            }
+            syncedList.add(activeCard);
+        }
+        return syncedList;
+    }
+
     @Override
     public void show() {
         stage = new Stage(new FitViewport(1280, 720));
@@ -65,11 +90,10 @@ public class CollectionScreen implements Screen {
         skin = new Skin(Gdx.files.internal("ui/uiskin.json"));
         FullscreenToggle.attach(stage);
 
-        // Menggunakan Player yang sama dengan seluruh game (gold & collection persist antar screen)
+        // Ambil objek Player aktif dari Game State
         player = game.getPlayer();
-        final List<Card> allCards = CardDatabase.getAllCards();
 
-        // INPUT LISTENER GLOBAL: Menangani ESC (Kembali) dan Panah Keyboard Kanan/Kiri (Halaman)
+        // INPUT LISTENER GLOBAL: Menangani ESC (Kembali) dan Panah Keyboard (Navigasi Halaman)
         stage.addListener(new InputListener() {
             @Override
             public boolean keyDown(InputEvent event, int keycode) {
@@ -78,6 +102,7 @@ public class CollectionScreen implements Screen {
                     return true;
                 }
 
+                List<Card> allCards = getSyncedCards();
                 int maxPage = (int) Math.ceil((double) (allCards != null ? allCards.size() : 0) / CARDS_PER_PAGE);
 
                 if (keycode == Input.Keys.LEFT || keycode == Input.Keys.A) {
@@ -98,14 +123,14 @@ public class CollectionScreen implements Screen {
             }
         });
 
-        // Pengaturan Background Tekstur Utamax
+        // Setup Texture Background & UI Components
         backgroundTexture = new Texture(Gdx.files.internal("background/background_lobby/CollectionBackground.png"));
         backgroundTexture.setFilter(Texture.TextureFilter.Linear, Texture.TextureFilter.Linear);
         Image bg = new Image(backgroundTexture);
         bg.setSize(1280, 720);
         stage.addActor(bg);
 
-        // Memuat tekstur tombol kustom agar serasi dengan MainMenu
+        // Memuat tekstur tombol kustom
         buttonNormal = new Texture(Gdx.files.internal("Button/PrimaryButton.png"));
         buttonNormal.setFilter(Texture.TextureFilter.Linear, Texture.TextureFilter.Linear);
 
@@ -115,6 +140,7 @@ public class CollectionScreen implements Screen {
         buttonPressed = new Texture(Gdx.files.internal("Button/PressedButton.png"));
         buttonPressed.setFilter(Texture.TextureFilter.Linear, Texture.TextureFilter.Linear);
 
+        // Memuat bingkai rarity
         commonFrame = new Texture(Gdx.files.internal("card_frames/commonFrame.png"));
         commonFrame.setFilter(Texture.TextureFilter.Linear, Texture.TextureFilter.Linear);
 
@@ -141,7 +167,7 @@ public class CollectionScreen implements Screen {
     }
 
     private void refreshScreen() {
-        displayPage(CardDatabase.getAllCards());
+        displayPage(getSyncedCards());
         rebuildUI(Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
     }
 
@@ -149,33 +175,40 @@ public class CollectionScreen implements Screen {
         if (titleFont != null) titleFont.dispose();
         if (cardFont != null) cardFont.dispose();
 
-        float scale = (float) height / 720f;
-
         // Racik Font Judul Utama secara HD Dinamis
         FreeTypeFontGenerator generator = new FreeTypeFontGenerator(Gdx.files.internal("fonts/CinzelDecorative-Regular.ttf"));
         FreeTypeFontGenerator.FreeTypeFontParameter parameter = new FreeTypeFontGenerator.FreeTypeFontParameter();
 
-        parameter.size = Math.round(36 * scale);
+        parameter.size = 36;
         parameter.color = new Color(0.9f, 0.8f, 0.6f, 1f);
-        parameter.borderWidth = 2 * scale;
+        parameter.borderWidth = 2f;
         parameter.borderColor = Color.BLACK;
+        parameter.minFilter = Texture.TextureFilter.Linear;
+        parameter.magFilter = Texture.TextureFilter.Linear;
         titleFont = generator.generateFont(parameter);
 
         // Racik Font Teks Info Kartu
-        parameter.size = Math.round(13 * scale);
+        parameter.size = 28;
         parameter.color = Color.WHITE;
-        parameter.borderWidth = 1 * scale;
+        parameter.borderWidth = 1.5f;
         parameter.borderColor = Color.BLACK;
+        parameter.shadowOffsetX = 1;
+        parameter.shadowOffsetY = 1;
+        parameter.shadowColor = new Color(0f, 0f, 0f, 0.9f);
+        parameter.minFilter = Texture.TextureFilter.Linear;
+        parameter.magFilter = Texture.TextureFilter.Linear;
         cardFont = generator.generateFont(parameter);
+
         generator.dispose();
 
-        titleFont.getData().setScale(1f / scale);
-        cardFont.getData().setScale(1f / scale);
+        titleFont.getRegion().getTexture().setFilter(Texture.TextureFilter.Linear, Texture.TextureFilter.Linear);
+        cardFont.getRegion().getTexture().setFilter(Texture.TextureFilter.Linear, Texture.TextureFilter.Linear);
+        cardFont.getData().setScale(0.5f);
 
         Label.LabelStyle titleStyle = new Label.LabelStyle(titleFont, Color.WHITE);
         cardLabelStyle = new Label.LabelStyle(cardFont, Color.WHITE);
 
-        // Racik ulang gaya tombol kustom menggunakan font tombol yang proporsional
+        // Style Tombol Kustom
         customButtonStyle = new TextButton.TextButtonStyle();
         customButtonStyle.up = new com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable(buttonNormal);
         customButtonStyle.over = new com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable(buttonHover);
@@ -191,7 +224,7 @@ public class CollectionScreen implements Screen {
         cardGridTable.clearChildren();
         paginationTable.clearChildren();
 
-        // Tombol Kembali dengan Gaya Kustom MainMenu
+        // Tombol Kembali
         TextButton backButton = new TextButton("< Back", customButtonStyle);
         backButton.addListener(new ClickListener() {
             @Override
@@ -199,18 +232,18 @@ public class CollectionScreen implements Screen {
                 game.setScreen(new MainMenuScreen(game));
             }
         });
-        // Disertai penyesuaian ukuran tombol agar proporsional di baris menu atas
         mainTable.add(backButton).left().padBottom(5).size(100, 40).row();
 
         Label screenTitle = new Label("CARD ALBUM COLLECTION", titleStyle);
         mainTable.add(screenTitle).padBottom(15).row();
 
-        List<Card> allCards = CardDatabase.getAllCards();
-        displayPage(allCards);
+        // Tampilkan daftar kartu yang sudah ter-sinkronisasi dengan data player
+        List<Card> syncedCards = getSyncedCards();
+        displayPage(syncedCards);
 
         mainTable.add(cardGridTable).expand().fill().row();
 
-        buildPaginationButtons(allCards);
+        buildPaginationButtons(syncedCards);
         mainTable.add(paginationTable).padBottom(10);
     }
 
@@ -226,34 +259,28 @@ public class CollectionScreen implements Screen {
 
         for (int i = startIndex; i < endIndex; i++) {
             final Card card = allCards.get(i);
-            boolean isOwned = (i % 3 != 0);
+            boolean isOwned = false;
+
+            if (player != null && player.getCollection() != null) {
+                for (Card playerCard : player.getCollection()) {
+                    if (playerCard.getId().equals(card.getId())) {
+                        isOwned = true;
+                        break;
+                    }
+                }
+            }
             final boolean finalIsOwned = isOwned;
 
-            String rarityStr = "common";
-            if (card.getRarity() != null) {
-                rarityStr = card.getRarity().name().toLowerCase();
-            }
-
-            // LOGIKA PEMILIHAN BINGKAI BERDASARKAN RARITY KARTU
+            String rarityStr = (card.getRarity() != null) ? card.getRarity().name().toLowerCase() : "common";
             Texture chosenFrame = commonFrame;
 
             switch (rarityStr) {
-                case "rare":
-                    chosenFrame = rareFrame;
-                    break;
-                case "epic":
-                    chosenFrame = epicFrame;
-                    break;
-                case "legendary":
-                    chosenFrame = legendaryFrame;
-                    break;
+                case "rare":      chosenFrame = rareFrame; break;
+                case "epic":      chosenFrame = epicFrame; break;
+                case "legendary": chosenFrame = legendaryFrame; break;
                 case "special":
-                case "limited":
-                    chosenFrame = specialFrame;
-                    break;
-                default:
-                    chosenFrame = commonFrame;
-                    break;
+                case "limited":   chosenFrame = specialFrame; break;
+                default:          chosenFrame = commonFrame; break;
             }
 
             CardActor cardActor = new CardActor(card, skin, isOwned, cardLabelStyle, chosenFrame);
@@ -262,6 +289,7 @@ public class CollectionScreen implements Screen {
                 @Override
                 public void clicked(InputEvent event, float x, float y) {
                     Gdx.graphics.setSystemCursor(com.badlogic.gdx.graphics.Cursor.SystemCursor.Arrow);
+                    // Kirim objek kartu yang ter-sinkron ke CardDetailScreen
                     game.setScreen(new CardDetailScreen(game, card, finalIsOwned));
                 }
             });
@@ -282,7 +310,6 @@ public class CollectionScreen implements Screen {
 
         int maxPage = (int) Math.ceil((double) allCards.size() / CARDS_PER_PAGE);
 
-        // Menerapkan gaya kustom pada tombol navigasi halaman
         TextButton prevButton = new TextButton("<", customButtonStyle);
         Label pageLabel = new Label(" PAGE " + (currentPage + 1) + " / " + maxPage + " ", cardLabelStyle);
         TextButton nextButton = new TextButton(">", customButtonStyle);

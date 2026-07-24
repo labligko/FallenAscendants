@@ -5,6 +5,8 @@ import com.fallenascendants.model.Card;
 import com.fallenascendants.enumtype.ReactiveTrigger;
 import com.fallenascendants.enumtype.StatusType;
 import com.fallenascendants.model.StatusEffect;
+
+import java.util.ArrayList;
 import java.util.List;
 
 public class BattleManager {
@@ -19,6 +21,9 @@ public class BattleManager {
     private StatusEffectResolver statusEffectResolver;
     private FactionSynergyResolver factionSynergyResolver;
     private FactionCounterEffectResolver factionCounterEffectResolver;
+    private Card lastAttacker;
+    private Card lastTarget;
+    private boolean lastActionWasBasicAttack;
 
     public BattleManager(BattleField playerField, BattleField enemyField) {
         this.playerField = playerField;
@@ -71,9 +76,16 @@ public class BattleManager {
         }
     }
 
-    public String processSingleAction() {
+    // MENGEMBALIKAN LIST OF EVENTS BUKAN STRING
+    public List<BattleEvent> processSingleAction() {
+        List<BattleEvent> events = new ArrayList<>();
+        lastAttacker = null;
+        lastTarget = null;
+        lastActionWasBasicAttack = false;
+
         if (isBattleOver()) {
-            return "Battle already finished.";
+            events.add(new BattleEvent(BattleEvent.EventType.TEXT_MESSAGE, "Battle already finished."));
+            return events;
         }
 
         Card attacker = null;
@@ -86,139 +98,73 @@ public class BattleManager {
             attacker = turnQueue.getNextCard();
 
             if (attacker == null && isBattleOver()) {
-                return "Battle already finished.";
+                events.add(new BattleEvent(BattleEvent.EventType.TEXT_MESSAGE, "Battle already finished."));
+                return events;
             }
         }
 
+        // 1. STATUS EFFECT MULA GILIRAN
         String statusLog = statusEffectResolver.applyStatusEffectsAtTurnStart(attacker);
+        if (statusLog != null && !statusLog.isBlank()) {
+            events.add(new BattleEvent(BattleEvent.EventType.TEXT_MESSAGE, statusLog));
+        }
 
         if (attacker.isDead()) {
-            String deathLog = handleDeaths();
-
-            String log = statusLog + deathLog;
-            battleLog.add(log);
-            return log;
+            events.addAll(handleDeaths());
+            return events;
         }
 
         if (statusEffectResolver.shouldSkipTurn()) {
-            battleLog.add(statusLog);
-            return statusLog;
+            return events;
         }
 
         BattleField allyField = isPlayerCard(attacker) ? playerField : enemyField;
         BattleField targetField = isPlayerCard(attacker) ? enemyField : playerField;
 
+        // 2. CEK PENGGUNAAN SKILL
         String skillLog = skillResolver.tryResolveActiveSkill(attacker, allyField, targetField);
-
-        if (skillLog != null && !skillLog.contains("basic attack instead")) {
-            StringBuilder log = new StringBuilder();
-
-            if (statusLog != null && !statusLog.isBlank()) {
-                log.append(statusLog).append("\n");
-            }
-
-            log.append(skillLog).append("\n");
-
-            String deathLog = handleDeaths();
-
-            if (!deathLog.isBlank()) {
-                log.append(deathLog);
-            }
-
+        if (skillLog != null && !skillLog.isBlank() && !skillLog.contains("basic attack instead")) {
+            events.add(new BattleEvent(BattleEvent.EventType.TEXT_MESSAGE, skillLog));
+            events.addAll(handleDeaths());
             turnQueue.rebuildRemainingQueue();
-
-            log.append("\n");
-            log.append(turnQueue.getQueueReport());
-
-            battleLog.add(log.toString());
-
-            return log.toString();
+            return events;
         }
 
+        // 3. LOGIKA BASIC ATTACK
         Card target = targetingSystem.selectBasicAttackTarget(targetField.getActiveCards());
-
         if (target == null) {
-            return attacker.getName() + " has no target.";
+            events.add(new BattleEvent(BattleEvent.EventType.TEXT_MESSAGE, attacker.getName() + " has no target."));
+            return events;
         }
+
+        lastAttacker = attacker;
+        lastTarget = target;
+        lastActionWasBasicAttack = true;
+
+        // Event: Kartu Maju/Serang
+        events.add(new BattleEvent(BattleEvent.EventType.ACTION_ATTACK, attacker, attacker.getName() + " attacks " + target.getName()));
 
         DamageResult result = damageCalculator.calculateBasicAttack(attacker, target);
-        target.takeDamage(
-            result.getShieldAbsorbed()
-                + result.getHpDamage()
-        );
+        target.takeDamage(result.getShieldAbsorbed() + result.getHpDamage());
 
-        String counterEffectLog = factionCounterEffectResolver.resolveCounterEffect(
-            attacker,
-            target,
-            allyField,
-            result.getHpDamage()
-        );
+        // Event: Floating Number Damage
+        events.add(new BattleEvent(BattleEvent.EventType.DAMAGE_TAKEN, target, result.getRawDamage(), result.getShieldAbsorbed(), result.getHpDamage()));
 
-        StringBuilder log = new StringBuilder();
-
-        if (statusLog != null && !statusLog.isBlank()) {
-            log.append(statusLog).append("\n");
+        // Event: Counter Effect / Reflect
+        String counterEffectLog = factionCounterEffectResolver.resolveCounterEffect(attacker, target, allyField, result.getHpDamage());
+        if (counterEffectLog != null && !counterEffectLog.isBlank()) {
+            events.add(new BattleEvent(BattleEvent.EventType.TEXT_MESSAGE, counterEffectLog));
         }
 
-        if (skillLog != null) {
-            log.append(skillLog).append("\n");
-        }
-
-        log.append(attacker.getName())
-            .append(" attacks ")
-            .append(target.getName())
-            .append("\n");
-
-        log.append("Raw Damage: ")
-            .append(result.getRawDamage())
-            .append("\n");
-
-        log.append("Blocked by DEF: ")
-            .append(result.getBlockedByDefense())
-            .append("\n");
-
-        log.append("Shield Absorbed: ")
-            .append(result.getShieldAbsorbed())
-            .append("\n");
-
-        log.append("HP Damage: ")
-            .append(result.getHpDamage())
-            .append("\n");
-
-        log.append(target.getName())
-            .append(" HP: ")
-            .append(target.getCurrentHp())
-            .append("/")
-            .append(target.getMaxHp())
-            .append("\n");
-
-        log.append(target.getName())
-            .append(" Shield: ")
-            .append(target.getShield())
-            .append("\n");
-
-        if (!counterEffectLog.isBlank()) {
-            log.append(counterEffectLog);
-        }
-
-        String deathLog = handleDeaths();
-
-        if (!deathLog.isBlank()) {
-            log.append(deathLog);
-        }
+        // Event: Kematian (Jika Ada)
+        events.addAll(handleDeaths());
 
         turnQueue.rebuildRemainingQueue();
-
         if (attacker.getActiveSkill() != null) {
             attacker.getActiveSkill().reduceCooldown();
         }
 
-        log.append("\n");
-        log.append(turnQueue.getQueueReport());
-
-        battleLog.add(log.toString());
-
-        return log.toString();
+        return events;
     }
 
     private boolean isPlayerCard(Card card) {
@@ -227,137 +173,76 @@ public class BattleManager {
                 return true;
             }
         }
-
         return false;
     }
 
-    private String handleDeaths() {
-        StringBuilder log = new StringBuilder();
-
+    // UBAH HANDLE DEATHS AGAR ME-RETURN EVENT
+    private List<BattleEvent> handleDeaths() {
+        List<BattleEvent> events = new ArrayList<>();
         List<Card> deadPlayerCards = playerField.removeDeadCardsAndReplace();
         List<Card> deadEnemyCards = enemyField.removeDeadCardsAndReplace();
 
         for (Card deadCard : deadPlayerCards) {
-            log.append(deadCard.getName()).append(" is defeated.\n");
-            log.append("Reserve replacement checked.\n");
-
-            String deathSkillLog = skillResolver.resolveReactiveSkill(
-                deadCard,
-                playerField,
-                enemyField,
-                ReactiveTrigger.ON_DEATH
-            );
-
-            log.append(deathSkillLog);
+            events.add(new BattleEvent(BattleEvent.EventType.DEATH, deadCard, deadCard.getName() + " is defeated."));
+            String deathSkillLog = skillResolver.resolveReactiveSkill(deadCard, playerField, enemyField, ReactiveTrigger.ON_DEATH);
+            if (deathSkillLog != null && !deathSkillLog.isBlank()) {
+                events.add(new BattleEvent(BattleEvent.EventType.TEXT_MESSAGE, deathSkillLog));
+            }
         }
 
         for (Card deadCard : deadEnemyCards) {
-            log.append(deadCard.getName()).append(" is defeated.\n");
-            log.append("Reserve replacement checked.\n");
-
-            String deathSkillLog = skillResolver.resolveReactiveSkill(
-                deadCard,
-                enemyField,
-                playerField,
-                ReactiveTrigger.ON_DEATH
-            );
-
-            log.append(deathSkillLog);
+            events.add(new BattleEvent(BattleEvent.EventType.DEATH, deadCard, deadCard.getName() + " is defeated."));
+            String deathSkillLog = skillResolver.resolveReactiveSkill(deadCard, enemyField, playerField, ReactiveTrigger.ON_DEATH);
+            if (deathSkillLog != null && !deathSkillLog.isBlank()) {
+                events.add(new BattleEvent(BattleEvent.EventType.TEXT_MESSAGE, deathSkillLog));
+            }
         }
-
-        return log.toString();
+        return events;
     }
 
-    public String applyPassiveSkillsAtBattleStart() {
-        StringBuilder log = new StringBuilder();
-
-        log.append("Applying passive skills...\n");
+    // UBAH START BATTLE PASSIVE AGAR ME-RETURN EVENT
+    public List<BattleEvent> applyPassiveSkillsAtBattleStart() {
+        List<BattleEvent> events = new ArrayList<>();
 
         for (Card card : playerField.getActiveCards()) {
             if (card != null && !card.isDead()) {
-                log.append(skillResolver.resolvePassiveSkill(card));
+                String log = skillResolver.resolvePassiveSkill(card);
+                if (log != null && !log.isBlank()) events.add(new BattleEvent(BattleEvent.EventType.TEXT_MESSAGE, log));
             }
         }
 
         for (Card card : enemyField.getActiveCards()) {
             if (card != null && !card.isDead()) {
-                log.append(skillResolver.resolvePassiveSkill(card));
+                String log = skillResolver.resolvePassiveSkill(card);
+                if (log != null && !log.isBlank()) events.add(new BattleEvent(BattleEvent.EventType.TEXT_MESSAGE, log));
             }
         }
-
-        battleLog.add(log.toString());
-
-        return log.toString();
+        return events;
     }
 
-    private String applyStatusEffects(Card card) {
-        StringBuilder log = new StringBuilder();
+    // UBAH FACTION SYNERGY AGAR ME-RETURN EVENT
+    public List<BattleEvent> applyFactionSynergyAtBattleStart() {
+        List<BattleEvent> events = new ArrayList<>();
 
-        for (StatusEffect effect : card.getStatusEffects()) {
-            if (effect.getStatusType() == StatusType.BURN) {
-                card.takeDamage(effect.getPower());
+        String pLog = factionSynergyResolver.applyFactionSynergy(playerField.getActiveCards(), "PLAYER");
+        if (pLog != null && !pLog.isBlank()) events.add(new BattleEvent(BattleEvent.EventType.TEXT_MESSAGE, pLog));
 
-                log.append(card.getName())
-                    .append(" suffers ")
-                    .append(effect.getPower())
-                    .append(" burn damage.\n")
-                    .append(card.getName())
-                    .append(" HP: ")
-                    .append(card.getCurrentHp())
-                    .append("/")
-                    .append(card.getMaxHp())
-                    .append("\n");
-            }
+        String eLog = factionSynergyResolver.applyFactionSynergy(enemyField.getActiveCards(), "ENEMY");
+        if (eLog != null && !eLog.isBlank()) events.add(new BattleEvent(BattleEvent.EventType.TEXT_MESSAGE, eLog));
 
-            effect.reduceDuration();
-        }
-
-        card.removeExpiredStatus();
-
-        return log.toString();
+        return events;
     }
 
-    public String applyFactionSynergyAtBattleStart() {
-        StringBuilder log = new StringBuilder();
-
-        log.append(factionSynergyResolver.applyFactionSynergy(
-            playerField.getActiveCards(),
-            "PLAYER"
-        ));
-
-        log.append(factionSynergyResolver.applyFactionSynergy(
-            enemyField.getActiveCards(),
-            "ENEMY"
-        ));
-
-        battleLog.add(log.toString());
-
-        return log.toString();
-    }
-
+    // ... Sisa getter setter dan method isBattleOver dll biarkan sama ...
     public BattleField getPlayerField() {return playerField;}
-
     public BattleField getEnemyField() {return enemyField;}
-
+    public Card getLastAttacker() {return lastAttacker;}
+    public Card getLastTarget() {return lastTarget;}
+    public boolean wasLastActionBasicAttack() {return lastActionWasBasicAttack;}
     public List<Card> getUpcomingTurnOrder(int limit) {return turnQueue.getUpcomingOrder(limit);}
-
-    public String getTurnQueueReport() {
-        return turnQueue.getQueueReport();
-    }
-
-    public boolean isBattleOver() {
-        return !playerField.hasAliveCards() || !enemyField.hasAliveCards();
-    }
-
-    public boolean isPlayerWin() {
-        return playerField.hasAliveCards() && !enemyField.hasAliveCards();
-    }
-
-    public boolean isPlayerLose() {
-        return !playerField.hasAliveCards() && enemyField.hasAliveCards();
-    }
-
-    public BattleLog getBattleLog() {
-        return battleLog;
-    }
+    public String getTurnQueueReport() { return turnQueue.getQueueReport(); }
+    public boolean isBattleOver() { return !playerField.hasAliveCards() || !enemyField.hasAliveCards(); }
+    public boolean isPlayerWin() { return playerField.hasAliveCards() && !enemyField.hasAliveCards(); }
+    public boolean isPlayerLose() { return !playerField.hasAliveCards() && enemyField.hasAliveCards(); }
+    public BattleLog getBattleLog() { return battleLog; }
 }

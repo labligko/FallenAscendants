@@ -1,66 +1,183 @@
 {
-"gold": 1800,
+"playerName": "ash",
+"gold": 4060,
 "collection": [
 	{
-		"cardId": "iron_vanguard",
-		"level": 1
-	},
-	{
 		"cardId": "scalebinder",
-		"level": 1
+		"level": 1,
+		"copies": 1
 	},
 	{
-		"cardId": "eclipse",
-		"level": 1
+		"cardId": "hollow_grunt",
+		"level": 1,
+		"copies": 1
 	},
 	{
-		"cardId": "fadeborn_scout",
-		"level": 1
+		"cardId": "nightshade_binder",
+		"level": 1,
+		"copies": 1
 	},
 	{
-		"cardId": "fallen_wyrm",
-		"level": 1
-	},
-	{
-		"cardId": "void_weaver",
-		"level": 1
-	},
-	{
-		"cardId": "relic_scout",
-		"level": 1
-	},
-	{
-		"cardId": "doom_reader",
-		"level": 1
-	},
-	{
-		"cardId": "thorngate_sentinel",
-		"level": 1
-	},
-	{
-		"cardId": "eclipse",
-		"level": 1
-	},
-	{
-		"cardId": "iron_vanguard",
-		"level": 1
+		"cardId": "unseen_sovereign",
+		"level": 1,
+		"copies": 3
 	},
 	{
 		"cardId": "ember_drake",
-		"level": 1
+		"level": 1,
+		"copies": 1
+	},
+	{
+		"cardId": "abyssal_hulk",
+		"level": 1,
+		"copies": 1
+	},
+	{
+		"cardId": "ironscale_guardian",
+		"level": 1,
+		"copies": 2
+	},
+	{
+		"cardId": "the_nullborn",
+		"level": 1,
+		"copies": 1
+	},
+	{
+		"cardId": "iron_vanguard",
+		"level": 1,
+		"copies": 2
+	},
+	{
+		"cardId": "veilsworn",
+		"level": 1,
+		"copies": 2
+	},
+	{
+		"cardId": "the_first_ascendant",
+		"level": 1,
+		"copies": 1
+	},
+	{
+		"cardId": "sacred_outlaw",
+		"level": 1,
+		"copies": 1
+	},
+	{
+		"cardId": "vagrant_blade",
+		"level": 1,
+		"copies": 2
+	},
+	{
+		"cardId": "vael_the_uncrowned",
+		"level": 1,
+		"copies": 1
+	},
+	{
+		"cardId": "celestial_dragon_undone",
+		"level": 3,
+		"copies": 2
+	},
+	{
+		"cardId": "shadow_initiate",
+		"level": 1,
+		"copies": 2
+	},
+	{
+		"cardId": "flame_wyrm",
+		"level": 1,
+		"copies": 1
+	},
+	{
+		"cardId": "doom_reader",
+		"level": 1,
+		"copies": 1
+	},
+	{
+		"cardId": "shattered_void_knight",
+		"level": 1,
+		"copies": 1
+	},
+	{
+		"cardId": "wyvern_hatchling",
+		"level": 1,
+		"copies": 1
+	},
+	{
+		"cardId": "fadeborn_scout",
+		"level": 1,
+		"copies": 1
+	},
+	{
+		"cardId": "thorngate_sentinel",
+		"level": 1,
+		"copies": 2
+	},
+	{
+		"cardId": "runebound_seeker",
+		"level": 1,
+		"copies": 1
+	},
+	{
+		"cardId": "voidborn_hulk",
+		"level": 1,
+		"copies": 1
+	},
+	{
+		"cardId": "oathbreaker_knight",
+		"level": 1,
+		"copies": 1
+	},
+	{
+		"cardId": "stolen_grace",
+		"level": 1,
+		"copies": 1
+	},
+	{
+		"cardId": "silent_blade",
+		"level": 1,
+		"copies": 1
+	},
+	{
+		"cardId": "void_bishop",
+		"level": 1,
+		"copies": 1
+	},
+	{
+		"cardId": "abyss_priest",
+		"level": 1,
+		"copies": 1
+	},
+	{
+		"cardId": "the_last_congregation",
+		"level": 1,
+		"copies": 2
+	},
+	{
+		"cardId": "plague_oracle",
+		"level": 1,
+		"copies": 1
 	},
 	{
 		"cardId": "sanctified_archer",
-		"level": 1
+		"level": 1,
+		"copies": 1
 	},
 	{
-		"cardId": "relic_scout",
-		"level": 1
-	},
-	{
-		"cardId": "relic_scout",
-		"level": 1
+		"cardId": "rift_duelist",
+		"level": 1,
+		"copies": 1
 	}
 ],
-"battleSpeed": "INSTANT"
+"deckCardIds": [
+	"unseen_sovereign",
+	"the_nullborn",
+	"the_first_ascendant",
+	"celestial_dragon_undone",
+	"the_last_congregation",
+	"plague_oracle",
+	"stolen_grace",
+	"vael_the_uncrowned"
+],
+"musicVolume": 0.32999998,
+"battleSpeed": "FAST"
 }

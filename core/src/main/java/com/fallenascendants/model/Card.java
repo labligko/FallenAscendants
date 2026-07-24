@@ -26,6 +26,7 @@ public class Card {
     private int baseAtk;
     private int baseDef;
     private int temporarySpdReduction;
+    private int copies = 1;
 
     private Skill passiveSkill;
     private Skill activeSkill;
@@ -200,6 +201,22 @@ public class Card {
         }
     }
 
+    public int getCopies() {
+        return copies;
+    }
+
+    public void setCopies(int copies) {
+        this.copies = copies;
+    }
+
+    public void addCopies(int amount) {
+        this.copies += amount;
+    }
+
+    public void removeCopies(int amount) {
+        this.copies = Math.max(1, this.copies - amount); // Minimal sisa 1 (kartu utama)
+    }
+
     public String getId() {
         return id;
     }
@@ -234,6 +251,14 @@ public class Card {
 
     public int getDef() {
         return def;
+    }
+
+    public int getBaseAtk() {
+        return baseAtk;
+    }
+
+    public int getBaseDef() {
+        return baseDef;
     }
 
     public int getSpd() {
