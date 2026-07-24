@@ -1,6 +1,6 @@
 {
 "playerName": "ash",
-"gold": 3540,
+"gold": 3660,
 "collection": [
 	{
 		"cardId": "scalebinder",
@@ -74,8 +74,8 @@
 	},
 	{
 		"cardId": "celestial_dragon_undone",
-		"level": 1,
-		"copies": 1
+		"level": 2,
+		"copies": 3
 	},
 	{
 		"cardId": "shadow_initiate",
@@ -151,17 +151,15 @@
 		"cardId": "the_last_congregation",
 		"level": 1,
 		"copies": 2
+	},
+	{
+		"cardId": "plague_oracle",
+		"level": 1,
+		"copies": 1
 	}
 ],
 "deckCardIds": [
-	"celestial_dragon_undone",
-	"the_first_ascendant",
-	"veilsworn",
-	"vael_the_uncrowned",
-	"ironscale_guardian",
-	"the_nullborn",
-	"unseen_sovereign"
+	"celestial_dragon_undone"
 ],
-"musicVolume": 0.32999998,
-"battleSpeed": "INSTANT"
+"musicVolume": 0.32999998
 }
