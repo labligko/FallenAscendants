@@ -60,7 +60,7 @@ public class CollectionScreen implements Screen {
     }
 
     // =========================================================================
-    // HELPER: SINKRONISASI KARTU MASTER DENGAN DATA KARTU MILIK PLAYER
+    // SINKRONISASI KARTU MASTER DENGAN DATA KARTU MILIK PLAYER
     // =========================================================================
     private List<Card> getSyncedCards() {
         List<Card> masterCards = CardDatabase.getAllCards();

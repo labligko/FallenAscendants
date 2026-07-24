@@ -1,6 +1,6 @@
 {
 "playerName": "ash",
-"gold": 3660,
+"gold": 4060,
 "collection": [
 	{
 		"cardId": "scalebinder",
@@ -35,7 +35,7 @@
 	{
 		"cardId": "ironscale_guardian",
 		"level": 1,
-		"copies": 1
+		"copies": 2
 	},
 	{
 		"cardId": "the_nullborn",
@@ -45,7 +45,7 @@
 	{
 		"cardId": "iron_vanguard",
 		"level": 1,
-		"copies": 1
+		"copies": 2
 	},
 	{
 		"cardId": "veilsworn",
@@ -74,8 +74,8 @@
 	},
 	{
 		"cardId": "celestial_dragon_undone",
-		"level": 2,
-		"copies": 3
+		"level": 3,
+		"copies": 2
 	},
 	{
 		"cardId": "shadow_initiate",
@@ -156,10 +156,28 @@
 		"cardId": "plague_oracle",
 		"level": 1,
 		"copies": 1
+	},
+	{
+		"cardId": "sanctified_archer",
+		"level": 1,
+		"copies": 1
+	},
+	{
+		"cardId": "rift_duelist",
+		"level": 1,
+		"copies": 1
 	}
 ],
 "deckCardIds": [
-	"celestial_dragon_undone"
+	"unseen_sovereign",
+	"the_nullborn",
+	"the_first_ascendant",
+	"celestial_dragon_undone",
+	"the_last_congregation",
+	"plague_oracle",
+	"stolen_grace",
+	"vael_the_uncrowned"
 ],
-"musicVolume": 0.32999998
+"musicVolume": 0.32999998,
+"battleSpeed": "FAST"
 }
