@@ -108,6 +108,7 @@ public class MainMenuScreen implements Screen {
 
         float scale = (float) height / 720f;
 
+        // generate font hd, digenerate pake library Libgdx
         FreeTypeFontGenerator generator = new FreeTypeFontGenerator(Gdx.files.internal("fonts/CinzelDecorative-Regular.ttf"));
         FreeTypeFontGenerator.FreeTypeFontParameter parameter = new FreeTypeFontGenerator.FreeTypeFontParameter();
 

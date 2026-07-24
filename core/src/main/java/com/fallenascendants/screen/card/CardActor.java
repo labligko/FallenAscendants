@@ -108,19 +108,22 @@ public class CardActor extends Table {
 
         float h = getHeight();
         float w = getWidth();
+
         com.fallenascendants.enumtype.Rarity rarity = cardData.getRarity();
-        float insetLeft = w * rarity.getInsetLeft();
+        float insetLeft = w * rarity.getInsetLeft() * 0.85f;
+        float insetRight  = w * rarity.getInsetRight() * 0.85f;
         float insetTop = h * rarity.getInsetTop();
         float insetBottom = h * rarity.getInsetBottom();
 
-        if (w > 0) {
-            float fontScale = Math.max(0.5f, Math.min(1.1f, w / 160f));
-            lvlLabel.setFontScale(fontScale);
-            nameLabel.setFontScale(fontScale);
-        }
+        float maxTextWidth = w - insetLeft - insetRight;
+        nameCell.width(maxTextWidth);
 
-        nameCell.padBottom(insetBottom).padLeft(insetLeft).padRight(insetLeft);
-        lvlCell.padLeft(insetLeft + 6).padTop(insetTop + 4);
+        nameCell.padBottom(insetBottom + 20f)
+            .padLeft(insetLeft)
+            .padRight(insetRight);
+
+        lvlCell.padLeft(insetLeft + 14f)
+            .padTop(insetTop + 7f);
 
         invalidate();
     }
@@ -169,7 +172,7 @@ public class CardActor extends Table {
             w - insetLeft - insetRight,
             h - insetTop - insetBottom);
 
-        batch.setColor(0f, 0f, 0f, 0.6f * parentAlpha);
+        batch.setColor(0f, 0f, 0f, 0f * parentAlpha);
 
         float platePad = 4f;
 

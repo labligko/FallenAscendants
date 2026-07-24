@@ -1,0 +1,126 @@
+{
+"playerName": "ash",
+"gold": 2240,
+"collection": [
+	{
+		"cardId": "scalebinder",
+		"level": 1,
+		"copies": 1
+	},
+	{
+		"cardId": "hollow_grunt",
+		"level": 1,
+		"copies": 1
+	},
+	{
+		"cardId": "nightshade_binder",
+		"level": 1,
+		"copies": 1
+	},
+	{
+		"cardId": "unseen_sovereign",
+		"level": 1,
+		"copies": 2
+	},
+	{
+		"cardId": "ember_drake",
+		"level": 1,
+		"copies": 1
+	},
+	{
+		"cardId": "abyssal_hulk",
+		"level": 1,
+		"copies": 1
+	},
+	{
+		"cardId": "ironscale_guardian",
+		"level": 1,
+		"copies": 1
+	},
+	{
+		"cardId": "the_nullborn",
+		"level": 1,
+		"copies": 1
+	},
+	{
+		"cardId": "iron_vanguard",
+		"level": 1,
+		"copies": 1
+	},
+	{
+		"cardId": "veilsworn",
+		"level": 1,
+		"copies": 2
+	},
+	{
+		"cardId": "the_first_ascendant",
+		"level": 1,
+		"copies": 1
+	},
+	{
+		"cardId": "sacred_outlaw",
+		"level": 1,
+		"copies": 1
+	},
+	{
+		"cardId": "vagrant_blade",
+		"level": 1,
+		"copies": 1
+	},
+	{
+		"cardId": "vael_the_uncrowned",
+		"level": 1,
+		"copies": 1
+	},
+	{
+		"cardId": "celestial_dragon_undone",
+		"level": 1,
+		"copies": 1
+	},
+	{
+		"cardId": "shadow_initiate",
+		"level": 1,
+		"copies": 1
+	},
+	{
+		"cardId": "flame_wyrm",
+		"level": 1,
+		"copies": 1
+	},
+	{
+		"cardId": "doom_reader",
+		"level": 1,
+		"copies": 1
+	},
+	{
+		"cardId": "shattered_void_knight",
+		"level": 1,
+		"copies": 1
+	},
+	{
+		"cardId": "wyvern_hatchling",
+		"level": 1,
+		"copies": 1
+	},
+	{
+		"cardId": "fadeborn_scout",
+		"level": 1,
+		"copies": 1
+	},
+	{
+		"cardId": "thorngate_sentinel",
+		"level": 1,
+		"copies": 1
+	}
+],
+"deckCardIds": [
+	"unseen_sovereign",
+	"the_nullborn",
+	"the_first_ascendant",
+	"celestial_dragon_undone",
+	"vael_the_uncrowned",
+	"sacred_outlaw",
+	"abyssal_hulk",
+	"nightshade_binder"
+]
+}
