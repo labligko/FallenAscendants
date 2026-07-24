@@ -1,6 +1,6 @@
 {
 "playerName": "ash",
-"gold": 2240,
+"gold": 3540,
 "collection": [
 	{
 		"cardId": "scalebinder",
@@ -20,7 +20,7 @@
 	{
 		"cardId": "unseen_sovereign",
 		"level": 1,
-		"copies": 2
+		"copies": 3
 	},
 	{
 		"cardId": "ember_drake",
@@ -65,7 +65,7 @@
 	{
 		"cardId": "vagrant_blade",
 		"level": 1,
-		"copies": 1
+		"copies": 2
 	},
 	{
 		"cardId": "vael_the_uncrowned",
@@ -80,7 +80,7 @@
 	{
 		"cardId": "shadow_initiate",
 		"level": 1,
-		"copies": 1
+		"copies": 2
 	},
 	{
 		"cardId": "flame_wyrm",
@@ -110,17 +110,58 @@
 	{
 		"cardId": "thorngate_sentinel",
 		"level": 1,
+		"copies": 2
+	},
+	{
+		"cardId": "runebound_seeker",
+		"level": 1,
 		"copies": 1
+	},
+	{
+		"cardId": "voidborn_hulk",
+		"level": 1,
+		"copies": 1
+	},
+	{
+		"cardId": "oathbreaker_knight",
+		"level": 1,
+		"copies": 1
+	},
+	{
+		"cardId": "stolen_grace",
+		"level": 1,
+		"copies": 1
+	},
+	{
+		"cardId": "silent_blade",
+		"level": 1,
+		"copies": 1
+	},
+	{
+		"cardId": "void_bishop",
+		"level": 1,
+		"copies": 1
+	},
+	{
+		"cardId": "abyss_priest",
+		"level": 1,
+		"copies": 1
+	},
+	{
+		"cardId": "the_last_congregation",
+		"level": 1,
+		"copies": 2
 	}
 ],
 "deckCardIds": [
-	"unseen_sovereign",
-	"the_nullborn",
-	"the_first_ascendant",
 	"celestial_dragon_undone",
+	"the_first_ascendant",
+	"veilsworn",
 	"vael_the_uncrowned",
-	"sacred_outlaw",
-	"abyssal_hulk",
-	"nightshade_binder"
-]
+	"ironscale_guardian",
+	"the_nullborn",
+	"unseen_sovereign"
+],
+"musicVolume": 0.32999998,
+"battleSpeed": "INSTANT"
 }

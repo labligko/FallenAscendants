@@ -261,6 +261,7 @@ public class SkillResolver {
 
     private String resolveReactiveStatusSkill(Card caster, BattleField enemyField, Skill skill, StatusType statusType) {
         StringBuilder log = new StringBuilder();
+        int baseEffectChance = 60; // Base chance untuk skill saat mati
 
         log.append(caster.getName())
             .append("'s death skill activates: ")
@@ -270,44 +271,44 @@ public class SkillResolver {
         if (skill.getTargetType() == TargetType.ALL_ENEMIES) {
             for (Card target : enemyField.getActiveCards()) {
                 if (target != null && !target.isDead()) {
-                    target.addStatusEffect(new StatusEffect(
-                        statusType,
-                        skill.getPower(),
-                        skill.getDuration()
-                    ));
+                    int finalChance = baseEffectChance;
 
-                    log.append("- ")
-                        .append(target.getName())
-                        .append(" receives ")
-                        .append(statusType)
-                        .append(" for ")
-                        .append(skill.getDuration())
-                        .append(" turn(s).\n");
+                    if (caster.getFaction() != null && target.getFaction() != null &&
+                        caster.getFaction().counters(target.getFaction())) {
+                        finalChance += 25;
+                    }
+
+                    if (random.nextInt(100) < finalChance) {
+                        target.addStatusEffect(new StatusEffect(statusType, skill.getPower(), skill.getDuration()));
+                        log.append("- ").append(target.getName()).append(" receives ").append(statusType)
+                            .append(" for ").append(skill.getDuration()).append(" turn(s).\n");
+                    } else {
+                        log.append("- ").append(target.getName()).append(" RESISTED the ").append(statusType).append(" (Failed)!\n");
+                    }
                 }
             }
-
             return log.toString();
         }
 
         Card target = selectSkillTarget(skill.getTargetType(), enemyField.getActiveCards());
 
         if (target == null) {
-            return caster.getName() + "'s death skill " + skill.getName()
-                + " has no valid target.\n";
+            return caster.getName() + "'s death skill " + skill.getName() + " has no valid target.\n";
         }
 
-        target.addStatusEffect(new StatusEffect(
-            statusType,
-            skill.getPower(),
-            skill.getDuration()
-        ));
+        int finalChance = baseEffectChance;
+        if (caster.getFaction() != null && target.getFaction() != null &&
+            caster.getFaction().counters(target.getFaction())) {
+            finalChance += 25;
+        }
 
-        log.append(target.getName())
-            .append(" receives ")
-            .append(statusType)
-            .append(" for ")
-            .append(skill.getDuration())
-            .append(" turn(s).\n");
+        if (random.nextInt(100) < finalChance) {
+            target.addStatusEffect(new StatusEffect(statusType, skill.getPower(), skill.getDuration()));
+            log.append(target.getName()).append(" receives ").append(statusType)
+                .append(" for ").append(skill.getDuration()).append(" turn(s).\n");
+        } else {
+            log.append(target.getName()).append(" RESISTED the ").append(statusType).append(" (Failed)!\n");
+        }
 
         return log.toString();
     }
@@ -360,6 +361,10 @@ public class SkillResolver {
     private String resolveStatusSkill(Card caster, BattleField enemyField, Skill skill, StatusType statusType) {
         StringBuilder log = new StringBuilder();
 
+        // 1. Tentukan base chance (misal 60%).
+        // Kalau class Skill kamu punya method getEffectChance(), ganti 60 dengan skill.getEffectChance()
+        int baseEffectChance = 60;
+
         if (skill.getTargetType() == TargetType.ALL_ENEMIES) {
             log.append(caster.getName())
                 .append(" uses ")
@@ -368,22 +373,37 @@ public class SkillResolver {
 
             for (Card target : enemyField.getActiveCards()) {
                 if (target != null && !target.isDead()) {
-                    target.addStatusEffect(new StatusEffect(statusType, skill.getPower(), skill.getDuration()));
+                    int finalChance = baseEffectChance;
 
-                    log.append("- ")
-                        .append(target.getName())
-                        .append(" receives ")
-                        .append(statusType)
-                        .append(" for ")
-                        .append(skill.getDuration())
-                        .append(" turn(s).\n");
+                    // --- LOGIKA FACTION COUNTER ---
+                    // (Asumsi di enum Faction ada method .counters() atau sesuaikan dengan caramu mengecek kelemahan)
+                    if (caster.getFaction() != null && target.getFaction() != null &&
+                        caster.getFaction().counters(target.getFaction())) {
+                        finalChance += 25; // Tambahan peluang 25% jika faksi unggul
+                    }
+
+                    // 2. Lempar dadu RNG 1-100
+                    if (random.nextInt(100) < finalChance) {
+                        target.addStatusEffect(new StatusEffect(statusType, skill.getPower(), skill.getDuration()));
+                        log.append("- ")
+                            .append(target.getName())
+                            .append(" receives ")
+                            .append(statusType)
+                            .append(" for ")
+                            .append(skill.getDuration())
+                            .append(" turn(s).\n");
+                    } else {
+                        log.append("- ")
+                            .append(target.getName())
+                            .append(" RESISTED the ")
+                            .append(statusType)
+                            .append(" (Failed)!\n");
+                    }
                 }
             }
 
             skill.use();
-
             log.append("Skill cooldown: ").append(skill.getCooldown()).append(" turn(s).");
-
             return log.toString();
         }
 
@@ -394,14 +414,23 @@ public class SkillResolver {
                 + ", but there is no target.";
         }
 
-        target.addStatusEffect(new StatusEffect(statusType, skill.getPower(), skill.getDuration()));
+        int finalChance = baseEffectChance;
+        if (caster.getFaction() != null && target.getFaction() != null &&
+            caster.getFaction().counters(target.getFaction())) {
+            finalChance += 25;
+        }
+
         skill.use();
 
-        return caster.getName() + " uses " + skill.getName()
-            + " on " + target.getName()
-            + ".\n"
-            + target.getName() + " receives " + statusType
-            + " for " + skill.getDuration() + " turn(s).\n"
-            + "Skill cooldown: " + skill.getCooldown() + " turn(s).";
+        if (random.nextInt(100) < finalChance) {
+            target.addStatusEffect(new StatusEffect(statusType, skill.getPower(), skill.getDuration()));
+            return caster.getName() + " uses " + skill.getName() + " on " + target.getName() + ".\n"
+                + target.getName() + " receives " + statusType + " for " + skill.getDuration() + " turn(s).\n"
+                + "Skill cooldown: " + skill.getCooldown() + " turn(s).";
+        } else {
+            return caster.getName() + " uses " + skill.getName() + " on " + target.getName() + ".\n"
+                + target.getName() + " RESISTED the " + statusType + " (Failed)!\n"
+                + "Skill cooldown: " + skill.getCooldown() + " turn(s).";
+        }
     }
 }
