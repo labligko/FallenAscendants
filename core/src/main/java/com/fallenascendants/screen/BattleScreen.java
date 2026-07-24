@@ -7,10 +7,7 @@ import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.Pixmap;
 import com.badlogic.gdx.graphics.Texture;
-import com.badlogic.gdx.graphics.g2d.Batch;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
-import com.badlogic.gdx.graphics.g2d.GlyphLayout;
-import com.badlogic.gdx.graphics.g2d.freetype.FreeTypeFontGenerator;
 import com.badlogic.gdx.math.Interpolation;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.scenes.scene2d.Actor;
@@ -23,6 +20,7 @@ import com.badlogic.gdx.utils.Align;
 import com.badlogic.gdx.utils.viewport.FitViewport;
 import com.badlogic.gdx.scenes.scene2d.actions.Actions;
 import com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable;
+import com.badlogic.gdx.graphics.g2d.freetype.FreeTypeFontGenerator;
 import com.fallenascendants.FallenAscendantsGame;
 import com.fallenascendants.audio.MusicManager;
 import com.fallenascendants.audio.SFXManager;
@@ -39,6 +37,10 @@ import java.util.*;
 import java.util.List;
 
 public class BattleScreen implements Screen {
+
+    // =========================================================================
+    // 1. INTI & DEKLARASI VARIABEL
+    // =========================================================================
     private final FallenAscendantsGame game;
     private final BattleManager battleManager;
 
@@ -106,14 +108,19 @@ public class BattleScreen implements Screen {
 
     private Image pauseOverlayImage;
     private Table pauseOverlayContent;
-    private Image resultOverlayImage;
-    private Table resultOverlayContent;
+    private boolean paused = false;
 
+    // =========================================================================
+    // 2. KONSTRUKTOR
+    // =========================================================================
     public BattleScreen(FallenAscendantsGame game, BattleManager battleManager) {
         this.game = game;
         this.battleManager = battleManager;
     }
 
+    // =========================================================================
+    // 3. INISIALISASI ASSET & STAGE
+    // =========================================================================
     @Override
     public void show() {
         stage = new Stage(new FitViewport(1280, 720));
@@ -121,7 +128,7 @@ public class BattleScreen implements Screen {
         Gdx.input.setCatchKey(Input.Keys.BACK, true);
         Gdx.input.setCatchKey(Input.Keys.ESCAPE, true);
         skin = new Skin(Gdx.files.internal("ui/uiskin.json"));
-        MusicManager.play("sound/background_music/battle_sound.mp3", true, game.getMusicVolume()*0.5f);
+        MusicManager.play("sound/background_music/battle_sound.mp3", true, game.getMusicVolume() * 0.5f);
 
         panelTexture = new Texture(Gdx.files.internal("Panel/LargePanel.png"));
         panelTexture.setFilter(Texture.TextureFilter.Linear, Texture.TextureFilter.Linear);
@@ -153,19 +160,16 @@ public class BattleScreen implements Screen {
         Pixmap gradient = new Pixmap(1, 256, Pixmap.Format.RGBA8888);
         for (int y = 0; y < 256; y++) {
             float a = 0.92f;
-
-            // sedikit lebih terang di tengah
             if (y > 90 && y < 170) {
                 a = 0.82f;
             }
-
             gradient.setColor(0f, 0f, 0f, a);
             gradient.drawPixel(0, y);
         }
         dialogGradient = new Texture(gradient);
         gradient.dispose();
 
-        // --- FONT DIGENERATE DULUAN, SEBELUM DIPAKE DI customButtonStyle/customWindowStyle ---
+        // Setup Font HD Supersampling
         FreeTypeFontGenerator generator = new FreeTypeFontGenerator(Gdx.files.internal("fonts/CinzelDecorative-Regular.ttf"));
         FreeTypeFontGenerator.FreeTypeFontParameter parameter = new FreeTypeFontGenerator.FreeTypeFontParameter();
 
@@ -218,7 +222,6 @@ public class BattleScreen implements Screen {
         cardSideStyle = new Label.LabelStyle(cardSideFont, Color.WHITE);
         uiStyle = new Label.LabelStyle(uiFont, Color.WHITE);
 
-        // Sekarang uiFont & titleFont udah pasti ada isinya -> aman dipake di sini.
         customButtonStyle = new TextButton.TextButtonStyle();
         customButtonStyle.up = new TextureRegionDrawable(buttonNormal);
         customButtonStyle.over = new TextureRegionDrawable(buttonHover);
@@ -283,9 +286,9 @@ public class BattleScreen implements Screen {
         refreshFactionSynergyPanel();
     }
 
-    private Dialog pauseDialog;
-    private boolean paused = false;
-
+    // =========================================================================
+    // 4. PAUSE OVERLAY SYSTEM
+    // =========================================================================
     private void showPauseDialog() {
         if (paused) {
             hidePauseOverlay();
@@ -356,6 +359,9 @@ public class BattleScreen implements Screen {
         }
     }
 
+    // =========================================================================
+    // 5. TURN ORDER & SYNERGY PANELS
+    // =========================================================================
     private Table buildTurnOrderPanel() {
         Table panel = new Table();
         panel.setBackground(new TextureRegionDrawable(solidPixel).tint(new Color(0f, 0f, 0f, 0.75f)));
@@ -442,12 +448,13 @@ public class BattleScreen implements Screen {
         return false;
     }
 
+    // =========================================================================
+    // 6. LAYOUT BATTLEFIELD & SLOT KARTU
+    // =========================================================================
     private Table buildBattlefieldRow(boolean isPlayerSide) {
         Table row = new Table();
 
         Label header = new Label(isPlayerSide ? "YOUR TEAM" : "ENEMY", goldTitleStyle);
-
-        // Deklarasi summaryLabel di atas agar posisinya bisa kita atur secara fleksibel
         Label summaryLabel = new Label("", uiStyle);
         summaryLabel.setColor(0.7f, 0.7f, 0.7f, 1f);
 
@@ -466,36 +473,26 @@ public class BattleScreen implements Screen {
         }
 
         if (isPlayerSide) {
-            // === BATTLEFIELD PEMAIN (PLAYER SIDE) ===
             playerGraveyardColumn = graveyardColumn;
             playerReserveColumn = reserveColumn;
             playerSummaryLabel = summaryLabel;
 
-            // 1. Kartu diletakkan paling atas
             row.add(graveyardColumn).width(70).top().padRight(15);
             row.add(activeRow).top();
             row.add(reserveColumn).width(70).top().padLeft(15);
-            row.row(); // Wajib dipanggil agar elemen selanjutnya pindah ke bawah kartu
+            row.row();
 
-            // 2. Header ("YOUR TEAM") di bawah kartu
             row.add(header).colspan(3).padTop(10).padBottom(5).row();
-
-            // 3. Summary Label (Jumlah Grave/Reserve) di bawah header
             row.add(summaryLabel).colspan(3).padBottom(5).row();
 
         } else {
-            // === BATTLEFIELD MUSUH (ENEMY SIDE) ===
             enemyReserveColumn = reserveColumn;
             enemyGraveyardColumn = graveyardColumn;
             enemySummaryLabel = summaryLabel;
 
-            // 1. Header ("ENEMY") diletakkan paling atas
             row.add(header).colspan(3).padBottom(5).row();
-
-            // 2. Summary Label (Jumlah Grave/Reserve) diletakkan tepat di bawah header
             row.add(summaryLabel).colspan(3).padBottom(10).row();
 
-            // 3. Kartu diletakkan di bawah summary label
             row.add(reserveColumn).width(70).top().padRight(15);
             row.add(activeRow).top();
             row.add(graveyardColumn).width(70).top().padLeft(15);
@@ -583,7 +580,7 @@ public class BattleScreen implements Screen {
         return cached;
     }
 
-    private void fillActiveSlot(Table slot, Card card , boolean isEnemySide) {
+    private void fillActiveSlot(Table slot, Card card, boolean isEnemySide) {
         slot.clear();
         hpLabelBySlot.remove(slot);
 
@@ -658,6 +655,9 @@ public class BattleScreen implements Screen {
         }
     }
 
+    // =========================================================================
+    // 7. BATTLE ENGINE STEPPING & ANIMATIONS
+    // =========================================================================
     private void resolveRemainingActionsInstantly() {
         while (!battleManager.isBattleOver()) {
             battleManager.processSingleAction();
@@ -675,7 +675,6 @@ public class BattleScreen implements Screen {
     private void stepBattle() {
         if (battleManager.isBattleOver()) return;
 
-        // 1. REKAM HP & SHIELD SEBELUM ACTION JALAN
         Map<Card, int[]> beforeSnapshot = captureHpShieldSnapshot();
 
         List<BattleEvent> turnEvents = battleManager.processSingleAction();
@@ -700,7 +699,7 @@ public class BattleScreen implements Screen {
         final float ATTACK_ANIM_DURATION = 0.6f;
 
         float currentDelay = 0f;
-        float climaxDelay = -1f; // Timing akurat kapan efek visual & damage keluar
+        float climaxDelay = -1f;
         String pendingSfx = null;
 
         for (BattleEvent event : turnEvents) {
@@ -721,7 +720,6 @@ public class BattleScreen implements Screen {
                         continue;
                     }
 
-                    // Deteksi SFX untuk skill / status efek
                     if (msgLower.contains("burn")) pendingSfx = "sound/sound_effect/burn.mp3";
                     else if (msgLower.contains("poison")) pendingSfx = "sound/sound_effect/poison.mp3";
                     else if (msgLower.contains("slow")) pendingSfx = "sound/sound_effect/slow.mp3";
@@ -735,8 +733,6 @@ public class BattleScreen implements Screen {
                     ));
 
                     currentDelay += TEXT_DISPLAY_DURATION;
-
-                    // Jika tidak ada serangan fisik yang lunge (maju), climax/efek keluar setelah teks muncul.
                     if (climaxDelay == -1f) climaxDelay = currentDelay;
                 }
             }
@@ -749,7 +745,6 @@ public class BattleScreen implements Screen {
                         Actions.delay(currentDelay),
                         Actions.run(() -> playLungeAnimation(attackerActor, aPos, tPos))
                     ));
-                    // Efek benturan dan damage angka muncul TEPAT saat kartu menabrak (0.20 detik setelah lunge)
                     climaxDelay = currentDelay + 0.20f;
                     currentDelay += ATTACK_ANIM_DURATION;
                 }
@@ -758,15 +753,12 @@ public class BattleScreen implements Screen {
 
         if (climaxDelay == -1f) climaxDelay = currentDelay;
 
-        // 2. SIMULTANEOUS VISUAL EFFECTS (Menggantikan DAMAGE_TAKEN)
-        // Mengeksekusi semua damage (AoE, Burn) atau Heal secara serentak (bersamaan) tanpa delay satu-satu
         final String finalSfx = pendingSfx;
         stage.addAction(Actions.sequence(
             Actions.delay(climaxDelay),
             Actions.run(() -> applySnapshotEffects(beforeSnapshot, finalSfx))
         ));
 
-        // Jeda tambahan agar floating numbers bisa naik sebelum kartu masuk kuburan
         final float totalDelay = Math.max(currentDelay, climaxDelay + 0.6f);
 
         stage.addAction(Actions.sequence(
@@ -793,7 +785,7 @@ public class BattleScreen implements Screen {
         attackerActor.clearActions();
         attackerActor.addAction(Actions.sequence(
             Actions.moveBy(dx, dy, 0.20f, Interpolation.pow2Out),
-            Actions.delay(0.08f), // Jeda benturan
+            Actions.delay(0.08f),
             Actions.moveBy(-dx, -dy, 0.18f, Interpolation.pow2In)
         ));
     }
@@ -824,37 +816,36 @@ public class BattleScreen implements Screen {
             CardActor actor = cardActorCache.get(card);
             if (actor == null || actor.getStage() == null) continue;
 
-            if (hpDelta < 0) { // TERKENA DAMAGE SEKALIPUN AREA
+            if (hpDelta < 0) {
                 playDamageVisual(actor);
                 spawnFloatingNumber(actor, String.valueOf(hpDelta), Color.RED);
                 if (!sfxPlayed) {
                     String sfx = overrideSfx != null ? overrideSfx : "sound/sound_effect/hit.mp3";
-                    SFXManager.play(sfx, game.getSfxVolume()*1.5f);
+                    SFXManager.play(sfx, game.getSfxVolume() * 1.5f);
                     sfxPlayed = true;
                 }
-            } else if (hpDelta > 0) { // HEALING
+            } else if (hpDelta > 0) {
                 playHealVisual(actor);
                 spawnFloatingNumber(actor, "+" + hpDelta, Color.GREEN);
                 if (!sfxPlayed) {
                     String sfx = overrideSfx != null ? overrideSfx : "sound/sound_effect/heal.mp3";
-                    SFXManager.play(sfx, game.getSfxVolume()*1.5f);
+                    SFXManager.play(sfx, game.getSfxVolume() * 1.5f);
                     sfxPlayed = true;
                 }
-            } else if (shieldDelta > 0) { // MENDAPATKAN SHIELD BARU (INI YANG BARU)
+            } else if (shieldDelta > 0) {
                 playShieldGainVisual(actor);
-                spawnFloatingNumber(actor, "+" + shieldDelta + " Shield", Color.CYAN); // Muncul Teks Cyan
+                spawnFloatingNumber(actor, "+" + shieldDelta + " Shield", Color.CYAN);
                 if (!sfxPlayed) {
-                    // Kalau kamu punya shield.mp3, ganti string di bawah. Sementara pakai heal.
                     String sfx = overrideSfx != null ? overrideSfx : "sound/sound_effect/heal.mp3";
-                    SFXManager.play(sfx, game.getSfxVolume()*1.5f);
+                    SFXManager.play(sfx, game.getSfxVolume() * 1.5f);
                     sfxPlayed = true;
                 }
-            } else if (shieldDelta < 0) { // SHIELD PECAH / TERTABRAK DAMAGE
+            } else if (shieldDelta < 0) {
                 playDamageVisual(actor);
                 spawnFloatingNumber(actor, "Absorb " + Math.abs(shieldDelta), Color.GRAY);
                 if (!sfxPlayed) {
                     String sfx = overrideSfx != null ? overrideSfx : "sound/sound_effect/hit.mp3";
-                    SFXManager.play(sfx, game.getSfxVolume()*1.5f);
+                    SFXManager.play(sfx, game.getSfxVolume() * 1.5f);
                     sfxPlayed = true;
                 }
             }
@@ -879,12 +870,10 @@ public class BattleScreen implements Screen {
     private void playHealVisual(CardActor actor) {
         actor.clearActions();
         actor.addAction(Actions.parallel(
-            // Melompat riang (bounce)
             Actions.sequence(
                 Actions.moveBy(0, 10, 0.05f, Interpolation.pow2Out),
                 Actions.moveBy(0, -10, 0.08f, Interpolation.pow2In)
             ),
-            // Flash warna HIJAU
             Actions.sequence(
                 Actions.color(Color.GREEN, 0.05f),
                 Actions.color(Color.WHITE, 0.12f)
@@ -895,12 +884,10 @@ public class BattleScreen implements Screen {
     private void playShieldGainVisual(CardActor actor) {
         actor.clearActions();
         actor.addAction(Actions.parallel(
-            // Melompat sedikit
             Actions.sequence(
                 Actions.moveBy(0, 8, 0.05f, Interpolation.circleOut),
                 Actions.moveBy(0, -8, 0.08f, Interpolation.circleIn)
             ),
-            // Flash warna CYAN / BIRU MUDA
             Actions.sequence(
                 Actions.color(Color.CYAN, 0.05f),
                 Actions.color(Color.WHITE, 0.15f)
@@ -928,7 +915,6 @@ public class BattleScreen implements Screen {
     }
 
     private void refreshFactionSynergyPanel() {
-        // 1. SYNERGY PLAYER (Bawah)
         HashMap<Faction, Integer> playerFactions = new HashMap<>();
         for (Card card : battleManager.getPlayerField().getActiveCards()) {
             if (card != null && !card.isDead()) {
@@ -950,13 +936,12 @@ public class BattleScreen implements Screen {
 
         if (playerSynergyLabel == null) {
             playerSynergyLabel = new Label(pSynergyText.toString(), uiStyle);
-            playerSynergyLabel.setPosition(950, 30); // Di bawah (area player)
+            playerSynergyLabel.setPosition(950, 30);
             stage.addActor(playerSynergyLabel);
         } else {
             playerSynergyLabel.setText(pSynergyText.toString());
         }
 
-        // 2. SYNERGY MUSUH (Atas)
         HashMap<Faction, Integer> enemyFactions = new HashMap<>();
         for (Card card : battleManager.getEnemyField().getActiveCards()) {
             if (card != null && !card.isDead()) {
@@ -978,76 +963,24 @@ public class BattleScreen implements Screen {
 
         if (enemySynergyLabel == null) {
             enemySynergyLabel = new Label(eSynergyText.toString(), uiStyle);
-            enemySynergyLabel.setPosition(30, 390); // Di atas (sejajar dengan kartu musuh)
+            enemySynergyLabel.setPosition(30, 390);
             stage.addActor(enemySynergyLabel);
         } else {
             enemySynergyLabel.setText(eSynergyText.toString());
         }
     }
 
+    // =========================================================================
+    // 8. BATTLE RESULT & TRANSITION (FIX: POP-UP DIPANGKAS SEPENUHNYA)
+    // =========================================================================
     private void showBattleResultDialog() {
         MusicManager.stop();
-        if (battleManager.isPlayerWin()) {
-            MusicManager.play("sound/background_music/victory_sound.mp3", true, game.getMusicVolume());
-        } else {
-            MusicManager.play("sound/background_music/defeat_sound.mp3", true, game.getMusicVolume());
-        }
 
-        String title = battleManager.isPlayerWin() ? "VICTORY" : "DEFEAT";
-        String message = battleManager.isPlayerWin() ? "You have defeated the enemy." : "Your team has fallen.";
+        // Hitung hadiah & langsung alihkan Screen ke RewardScreen tanpa membuat dialog pertama
+        ProgressionManager.BattleRewards rewards =
+            ProgressionManager.processBattleRewards(game.getPlayer(), battleManager.isPlayerWin());
 
-        float width = 480f;
-        float height = 260f;
-        float x = (1280f - width) / 2f;
-        float y = (720f - height) / 2f;
-
-        resultOverlayImage = new Image(new TextureRegionDrawable(panelTexture));
-        resultOverlayImage.setSize(width, height);
-        resultOverlayImage.setPosition(x, y);
-        stage.addActor(resultOverlayImage);
-
-        resultOverlayContent = new Table();
-        resultOverlayContent.setSize(width, height);
-        resultOverlayContent.setPosition(x, y);
-        resultOverlayContent.pad(60f, 30f, 30f, 30f);
-        stage.addActor(resultOverlayContent);
-
-        Label titleLabel = new Label(title, goldTitleStyle);
-        titleLabel.setAlignment(Align.center);
-        resultOverlayContent.add(titleLabel).padBottom(16).row();
-
-        Label messageLabel = new Label(message, uiStyle);
-        messageLabel.setAlignment(Align.center);
-        resultOverlayContent.add(messageLabel).padBottom(24).row();
-
-        TextButton continueBtn = new TextButton("Continue", customButtonStyle);
-        resultOverlayContent.add(continueBtn).width(180).height(48);
-
-        Runnable goToReward = () -> {
-            ProgressionManager.BattleRewards rewards =
-                ProgressionManager.processBattleRewards(game.getPlayer(), battleManager.isPlayerWin());
-            game.setScreen(new RewardScreen(game, rewards));
-        };
-
-        continueBtn.addListener(new ClickListener() {
-            @Override
-            public void clicked(InputEvent event, float x, float y) {
-                goToReward.run();
-            }
-        });
-
-        // Dialog.key(ENTER, true) dulu otomatis mancing tombol lewat result(true);
-        // sekarang gak ada Dialog lagi, jadi listener key ditaro langsung di stage.
-        stage.addListener(new InputListener() {
-            @Override
-            public boolean keyDown(InputEvent event, int keycode) {
-                if (keycode == Input.Keys.ENTER) {
-                    goToReward.run();
-                    return true;
-                }
-                return false;
-            }
-        });
+        game.setScreen(new RewardScreen(game, rewards));
     }
 
     private void announce(String text) {
@@ -1073,6 +1006,9 @@ public class BattleScreen implements Screen {
         }
     }
 
+    // =========================================================================
+    // 9. TOOLTIP & LIFECYCLE MANAGEMENT
+    // =========================================================================
     private Table statsTooltip;
 
     private void showStatsTooltip(Actor sourceActor, Card card) {
@@ -1120,7 +1056,6 @@ public class BattleScreen implements Screen {
 
     @Override
     public void render(float delta) {
-        // FIX PAUSE: Cegah pause pakai ESCAPE saat dialog result muncul
         if (Gdx.input.isKeyJustPressed(Input.Keys.ESCAPE)) {
             if (!battleManager.isBattleOver() && !resultDialogShown) {
                 showPauseDialog();
@@ -1134,19 +1069,17 @@ public class BattleScreen implements Screen {
             BattleSpeed speed = game.getBattleSpeed();
 
             if (speed == BattleSpeed.INSTANT) {
-                // Pastikan tidak ada animasi berjalan sebelum skip instant
                 if (!isAnimating && !battleManager.isBattleOver()) {
                     resolveRemainingActionsInstantly();
                 }
             } else {
-                // KUNCI SINKRONISASI: Jangan jalankan giliran baru kalau animasi/log belum kelar!
                 if (!isAnimating && !battleManager.isBattleOver()) {
                     float interval = (speed == BattleSpeed.FAST) ? FAST_INTERVAL : NORMAL_INTERVAL;
                     stepTimer += delta;
 
                     if (stepTimer >= interval) {
                         stepTimer = 0f;
-                        isAnimating = true; // KUNCI SISTEM
+                        isAnimating = true;
                         stepBattle();
                     }
                 }
@@ -1164,6 +1097,7 @@ public class BattleScreen implements Screen {
 
     @Override public void pause() {}
     @Override public void resume() {}
+
     @Override
     public void hide() {
         MusicManager.stop();

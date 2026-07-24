@@ -138,7 +138,7 @@ public class CardDetailScreen implements Screen {
         parameter.minFilter = Texture.TextureFilter.Linear;
         parameter.magFilter = Texture.TextureFilter.Linear;
 
-        // 1. Font Judul Kartu Besar
+        // Font Judul Kartu Besar
         parameter.size = 56;
         parameter.color = new Color(0.95f, 0.85f, 0.65f, 1f);
         parameter.borderWidth = 3f;
@@ -147,7 +147,7 @@ public class CardDetailScreen implements Screen {
         titleFont.getRegion().getTexture().setFilter(Texture.TextureFilter.Linear, Texture.TextureFilter.Linear);
         titleFont.getData().setScale(0.5f);
 
-        // 2. Font Deskripsi & Tombol
+        // Font Deskripsi & Tombol
         parameter.size = 32;
         parameter.color = Color.WHITE;
         parameter.borderWidth = 2f;
@@ -174,7 +174,7 @@ public class CardDetailScreen implements Screen {
         customButtonStyle.pressedOffsetX = 1;
         customButtonStyle.pressedOffsetY = -1;
 
-        // Baris Atas: Tombol Kembali
+        // Tombol Kembali
         TextButton backButton = new TextButton("< Back to Collection", customButtonStyle);
         backButton.addListener(new ClickListener() {
             @Override
@@ -188,7 +188,7 @@ public class CardDetailScreen implements Screen {
         Table contentTable = new Table();
         contentTable.center();
 
-        // 1. SISI KIRI (Gambar Kartu & Tombol Upgrade)
+        // SISI KIRI (Gambar Kartu & Tombol Upgrade)
         Table leftGroup = new Table();
         leftGroup.top();
 
@@ -210,7 +210,7 @@ public class CardDetailScreen implements Screen {
         leftGroup.add(upgradeButton).size(180, 42).row();
         contentTable.add(leftGroup).size(300, 500).top().padRight(40);
 
-        // 2. SISI KANAN: Panel Informasi Ber-Background Kertas Gulungan
+        // SISI KANAN background gulungan kertas
         Table statsPanel = new Table();
 
         TextureRegionDrawable panelBg = new TextureRegionDrawable(statsBackgroundTexture);
